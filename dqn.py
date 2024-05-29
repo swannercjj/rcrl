@@ -41,7 +41,7 @@ class Args:
     """the user or org name of the model repository from the Hugging Face Hub"""
 
     # Algorithm specific arguments
-    env_id: str = "CartPole-v1"
+    env_id: str = "MountainCar-v0"
     """the id of the environment"""
     total_timesteps: int = 500000
     """total timesteps of the experiments"""
