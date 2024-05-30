@@ -119,7 +119,8 @@ poetry run pip install "stable_baselines3==2.0.0a1"
         )
     args = tyro.cli(Args)
     assert args.num_envs == 1, "vectorized envs are not supported at the moment"
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    time_id = int(time.time())
+    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{time_id}"
     if args.track:
         import wandb
 
@@ -227,7 +228,7 @@ poetry run pip install "stable_baselines3==2.0.0a1"
                     )
 
     if args.save_model:
-        model_path = f"runs/{run_name}/{args.exp_name}.cleanrl_model"
+        model_path = f"runs/{args.env_id}_runs/{run_name}/{args.exp_name}.cleanrl_model" 
         torch.save(q_network.state_dict(), model_path)
         print(f"model saved to {model_path}")
         from cleanrl_utils.evals.dqn_eval import evaluate
@@ -250,7 +251,7 @@ poetry run pip install "stable_baselines3==2.0.0a1"
 
             repo_name = f"{args.env_id}-{args.exp_name}-seed{args.seed}"
             repo_id = f"{args.hf_entity}/{repo_name}" if args.hf_entity else repo_name
-            push_to_hub(args, episodic_returns, repo_id, "DQN", f"runs/{run_name}", f"videos/{run_name}-eval")
-
+            push_to_hub(args, episodic_returns, repo_id, "DQN", f"runs/{args.env_id}_runs/{run_name}", f"videos/{run_name}-eval")  
+    print("Seed", args.seed, "ID:", time_id) 
     envs.close()
     writer.close()
