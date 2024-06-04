@@ -25,14 +25,14 @@ ls -l
 
 echo "Cloning repo..."
 git config --global http.proxy 'socks5://127.0.0.1:8888'
-#git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
+git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
 
 echo "Exporting env variables"
-#export PYTHONPATH=$SLURM_TMPDIR/project/src:.
+export PYTHONPATH=$SLURM_TMPDIR/project/src:.
 export python_venv=$SLURM_TMPDIR/virtualenvs/classicenv/bin/python3.10
 echo "Running experiment..."
 
-cd $SLURM_TMPDIR #/project #put project back in for cloning repo
+cd $SLURM_TMPDIR/project #put project back in for cloning repo
 $python_venv dqn.py --seed $SLURM_ARRAY_TASK_ID
 # Don't need this for wandb
 cp -r runs ~/projects/def-mbowling/gwynetha/rcrl/control_runs
