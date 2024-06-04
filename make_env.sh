@@ -1,21 +1,23 @@
-# Run this on interactive mode
-module load StdEnv/2023
-module load python/3.10.13
+module load python/3.11.5 StdEnv/2023 swig && \
+	ssh -q -N -T -f -D 8888 `echo $SSH_CONNECTION | cut -d " " -f 3` && \
+	export ALL_PROXY=socks5h://localhost:8888
 
-ssh -q -N -T -f -D 8888 `echo $SSH_CONNECTION | cut -d " " -f 3`
-export ALL_PROXY=socks5h://localhost:8888
-mkdir -p /tmp/gwen/virtualenvs
-cd /tmp/gwen/virtualenvs 
-virtualenv classicenv
-. classicenv/bin/activate
-pip install requests[socks] --no-index
-# put in directory to requirements file
-pip install -r /home/gwynetha/projects/def-mbowling/gwynetha/rcrl/control_req.txt --no-index
+mkdir -p /tmp/jiajing/virtualenvs && \
+	cd /tmp/jiajing/virtualenvs && \
+	echo "making venv" && \
+	virtualenv --no-download pyenv && \
+	source pyenv/bin/activate && \
+	echo "activated..." && \
+	pip install requests[socks] --no-index && \
+	echo "has socks..." && \
+	pip install --no-cache-dir "gymnasium[classic-control]" "gymnasium[box2d]" numpy "stable_baselines3==2.0.0a1" tqdm tyro torch tensorboard wandb --index-url https://pypi.org/simple --extra-index-url https://download.pytorch.org/whl/cpu && \
+	echo "finished installing packages" && \
+	cd /tmp/jiajing/ && \
+	echo "zipping..." && \
+	tar -czf venv.tar.gz virtualenvs && \
+	echo "moving..." && \
+	mv venv.tar.gz ~/projects/def-mbowling/jiajing8/ && \
+	echo "cleaning up..." && \
+	rm -fr /tmp/jiajing
 
-echo "installed packages:"
-pip list
-cd /tmp/gwen
-tar -czf classicenv.tar.gz virtualenvs
-cp classicenv.tar.gz ~/projects/def-mbowling/gwynetha/
-rm -fr /tmp/gwen
-echo "Done."
+echo "done"
