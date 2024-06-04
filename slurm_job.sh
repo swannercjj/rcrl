@@ -33,6 +33,7 @@ export python_venv=$SLURM_TMPDIR/virtualenvs/classicenv/bin/python3.10
 echo "Running experiment..."
 
 cd $SLURM_TMPDIR/project #put project back in for cloning repo
+git checkout control_experiments
 $python_venv dqn.py --seed $SLURM_ARRAY_TASK_ID 
 # Don't need this for wandb
 cp -r runs ~/projects/def-mbowling/gwynetha/rcrl/control_runs
