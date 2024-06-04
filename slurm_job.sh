@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=0-2:59
-#SBATCH --array=4-6
+#SBATCH --array=0-29
 
 # SOCKS5 Proxy
 if [ "$SLURM_TMPDIR" != "" ]; then
@@ -34,6 +34,6 @@ echo "Running experiment..."
 
 cd $SLURM_TMPDIR/project #put project back in for cloning repo
 git checkout control_experiments
-$python_venv dqn.py --seed $SLURM_ARRAY_TASK_ID 
+$python_venv dqn.py --seed $SLURM_ARRAY_TASK_ID --track --wandb_project_name 'Acrobot_Trials' --env_id 'Acrobot-v1'
 # Don't need this for wandb
 cp -r runs ~/projects/def-mbowling/gwynetha/rcrl/control_runs
