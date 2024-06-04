@@ -1,8 +1,9 @@
 #!/bin/bash
 #SBATCH --account=def-mbowling
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
 #SBATCH --time=0-2:59
+#SBATCH --array=0-2
 
 # SOCKS5 Proxy
 if [ "$SLURM_TMPDIR" != "" ]; then
@@ -22,9 +23,16 @@ cp ~/projects/def-mbowling/gwynetha/rcrl/dqn.py $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
 ls -l
 
+echo "Cloning repo..."
+git config --global http.proxy 'socks5://127.0.0.1:8888'
+#git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
+
 echo "Exporting env variables"
+#export PYTHONPATH=$SLURM_TMPDIR/project/src:.
 export python_venv=$SLURM_TMPDIR/virtualenvs/classicenv/bin/python3.10
 echo "Running experiment..."
-cd $SLURM_TMPDIR
-$python_venv dqn.py
+
+cd $SLURM_TMPDIR #/project #put project back in for cloning repo
+$python_venv dqn.py --seed $SLURM_ARRAY_TASK_ID
+# Don't need this for wandb
 cp -r runs ~/projects/def-mbowling/gwynetha/rcrl/control_runs
