@@ -14,9 +14,11 @@ mkdir -p /tmp/jiajing/virtualenvs && \ # can change this directory name if you w
 	echo "finished installing packages" && \
 	cd /tmp/jiajing/ && \
 	echo "zipping..." && \
+
 	tar -czf classicenv.tar.gz virtualenvs && \
 	echo "moving..." && \
 	mv classicenv.tar.gz ~/projects/def-mbowling/jiajing8/ && \ # make sure to change to your directory
+
 	echo "cleaning up..." && \
 	rm -fr /tmp/jiajing
 
