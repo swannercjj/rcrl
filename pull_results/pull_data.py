@@ -10,17 +10,17 @@ from dataclasses import dataclass
 import tyro
 
 PROJECTS = [
-    "<project name≥",
+    "openbenchmarkrl",
 ]
 
 
 @dataclass
 class Args:
-    cache_dir: str = "./wandb_cache/"
+    cache_dir: str = "../wandb_cache/"
     """the location to cache wandb runs"""
     entity_name: str = "<wandb workspace name>"
     """wandb workspace name"""
-    file_name: str = "./data/runs.csv"
+    file_name: str = "../data/runs.csv"
 
 
 def cache_runs(entity_name):
@@ -83,7 +83,7 @@ def extract_data(entity_name, cache_dir, file_name):
             data[project_name][config.get('learning_rate')].append(dic.get('charts/episodic_return'))
 
     df = pd.DataFrame(data)
-    df.to_csv()
+    df.to_csv(file_name)
 
 
 if __name__=="__main__":
