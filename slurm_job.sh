@@ -29,11 +29,11 @@ git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
 
 echo "Exporting env variables"
 export PYTHONPATH=$SLURM_TMPDIR/project/
-export python_venv=$SLURM_TMPDIR/virtualenvs/classicenv/bin/python3.10
+export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 echo "Running experiment..."
 
 cd $SLURM_TMPDIR/project #put project back in for cloning repo
 git checkout control_experiments
-$python_venv dqn.py --seed $SLURM_ARRAY_TASK_ID --track --wandb_project_name 'Acrobot_Trials' --env_id 'Acrobot-v1'
+$python_venv dqn.py --seed $SLURM_ARRAY_TASK_ID --track --wandb_project_name 'Acrobot_Trials2.0' --env_id 'Acrobot-v1'
 # Don't need this for wandb
-cp -r runs ~/projects/def-mbowling/gwynetha/rcrl/control_runs
+#cp -r runs ~/projects/def-mbowling/gwynetha/rcrl/control_runs
