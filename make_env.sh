@@ -2,7 +2,7 @@ module load python/3.11.5 StdEnv/2023 swig && \
 	ssh -q -N -T -f -D 8888 `echo $SSH_CONNECTION | cut -d " " -f 3` && \
 	export ALL_PROXY=socks5h://localhost:8888
 
-mkdir -p /tmp/jiajing/virtualenvs && \ # can change this directory name if you want, but will be deleted in the end
+mkdir -p /tmp/jiajing/virtualenvs && \ 
 	cd /tmp/jiajing/virtualenvs && \
 	echo "making venv" && \
 	virtualenv --no-download pyenv && \
@@ -17,7 +17,7 @@ mkdir -p /tmp/jiajing/virtualenvs && \ # can change this directory name if you w
 
 	tar -czf pyenv.tar.gz virtualenvs && \
 	echo "moving..." && \
-	mv pyenv.tar.gz ~/projects/def-mbowling/jiajing8/ && \ # make sure to change to your directory
+	mv pyenv.tar.gz ~/projects/def-mbowling/jiajing8/ && \ 
 
 	echo "cleaning up..." && \
 	rm -fr /tmp/jiajing
