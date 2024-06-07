@@ -10,17 +10,17 @@ from dataclasses import dataclass
 import tyro
 
 PROJECTS = [
-    "openbenchmarkrl",
+    "Compare_fail",
 ]
 
 
 @dataclass
 class Args:
-    cache_dir: str = "../wandb_cache/"
+    cache_dir: str = "./data/wandb_cache/"
     """the location to cache wandb runs"""
-    entity_name: str = "<wandb workspace name>"
+    entity_name: str = "rcrl"
     """wandb workspace name"""
-    file_name: str = "../data/runs.csv"
+    file_name: str = "./data/runs.csv"
 
 
 def cache_runs(entity_name):
@@ -89,6 +89,8 @@ def extract_data(entity_name, cache_dir, file_name):
 if __name__=="__main__":
     wandb.login()
     args = tyro.cli(Args)
+    print(args)
+    print(PROJECTS)
 
     # Define where to store the cache files
     if not os.path.exists(args.cache_dir):

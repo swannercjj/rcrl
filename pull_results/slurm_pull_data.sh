@@ -29,5 +29,5 @@ export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
 echo "Running experiment..."
 cd $SLURM_TMPDIR/project/pull_results
-$python_venv pull_data.py --entity_name openrlbenchmark
+$python_venv pull_data.py --entity_name rcrl
 cp -r data ~/projects/def-mbowling/jiajing8/rcrl/
