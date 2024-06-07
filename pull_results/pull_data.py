@@ -10,7 +10,8 @@ from dataclasses import dataclass
 import tyro
 
 PROJECTS = [
-    "Compare_fail",
+    "CartPole_Trials2.0",
+    "Acrobot_trials2.0",
 ]
 
 
