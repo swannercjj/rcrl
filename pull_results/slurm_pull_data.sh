@@ -29,6 +29,6 @@ export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
 echo "Running experiment..."
 cd $SLURM_TMPDIR/project/pull_results
-$python_venv pull_data.py --project name HyperParamSearchLr --hyperparam learning_rate
+$python_venv pull_data.py --project_name HyperParamSearchLr --hyperparam learning_rate
 tar -czf data.tar.gz data
 cp data.tar.gz ~/projects/def-mbowling/jiajing8/rcrl/
