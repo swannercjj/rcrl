@@ -20,7 +20,6 @@ class Args:
     """the location to cache wandb runs"""
     entity_name: str = "rcrl"
     """wandb workspace name"""
-    file_name: str = "./data/runs.csv"
 
 
 def cache_runs(project_name, entity_name, cache_dir):
@@ -52,10 +51,9 @@ def cache_runs(project_name, entity_name, cache_dir):
 
 
 def extract_data(project_name, entity_name, cache_dir, hyperparam):
-    df = pd.DataFrame(columns=['env_id', hyperparam, 'episodic_return_average'])
+    df = pd.DataFrame(columns=['env_id', 'seed', hyperparam, 'episodic_return_average'])
     api = wandb.Api(timeout=20)
     runs = api.runs(f"{entity_name}/{project_name}")
-    # data[project_name] = defaultdict(list)
     for run in runs:
         cache_path = os.path.join(cache_dir, f"{run.id}.pkl")
         if run.state != "finished":
@@ -75,8 +73,7 @@ def extract_data(project_name, entity_name, cache_dir, hyperparam):
         data = run_data[['charts/episodic_return']]
     
         dic = dict(data[~data['charts/episodic_return'].isnull()].mean())
-        df.loc[len(df)] = [config.get('env_id'), config.get(hyperparam), dic.get('charts/episodic_return')]
-        # df[config.get('env_id'), config.get('learning_rate')].append(dic.get('charts/episodic_return'))
+        df.loc[len(df)] = [config.get('env_id'), config.get('seed'), config.get(hyperparam), dic.get('charts/episodic_return')]
 
         print(f"Data saved for run {run.id}")
 
