@@ -19,9 +19,7 @@ ls -l
 
 echo "Cloning repo..."
 git config --global http.proxy 'socks5://127.0.0.1:8888'
-# for when branches are merged
-# git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/
-git clone --quiet https://github.com/swannercjj/rcrl.git --branch comparison-check --single-branch $SLURM_TMPDIR/project
+git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
 
 echo "Exporting env variables"
 export PYTHONPATH=$SLURM_TMPDIR/project/
