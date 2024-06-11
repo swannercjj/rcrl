@@ -2,29 +2,29 @@ import wandb
 import json
 import os
 import pickle
-from collections import defaultdict
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
-from collections import defaultdict
 from dataclasses import dataclass
 import tyro
 
 
 @dataclass
 class Args:
-    project_name: str = "HyperParamSearchLr"
-    """project to pull from"""
-    hyperparam: str = "learning_rate"
-    """desired hyperparameter to sweep"""
-    cache_dir: str = "./data/wandb_cache/"
-    """the location to cache wandb runs"""
     entity_name: str = "rcrl"
-    """wandb workspace name"""
+    """Wandb workspace name."""
+    project_name: str = "HyperParamSearchLr"
+    """Project to pull from."""
+    hyperparam: str = "learning_rate"
+    """Hyperparameter that was swept."""
+    data_dir: str = "./data/"
+    """The location to store cached wandb data and downloaded data."""
 
 
-def cache_runs(project_name, entity_name, cache_dir):
+def cache_runs(project_name, entity_name, data_dir):
     api = wandb.Api(timeout=20)
     runs = api.runs(f"{entity_name}/{project_name}")
+
+    cache_dir = os.path.join(data_dir, "wandb_cache/")
     
     # Define where to store the cache files
     if not os.path.exists(cache_dir):
@@ -50,12 +50,12 @@ def cache_runs(project_name, entity_name, cache_dir):
         executor.map(process_run, (enumerate(runs)))
 
 
-def extract_data(project_name, entity_name, cache_dir, hyperparam):
+def extract_data(project_name, entity_name, data_dir, hyperparam):
     df = pd.DataFrame(columns=['env_id', 'seed', hyperparam, 'episodic_return_average'])
     api = wandb.Api(timeout=20)
     runs = api.runs(f"{entity_name}/{project_name}")
     for run in runs:
-        cache_path = os.path.join(cache_dir, f"{run.id}.pkl")
+        cache_path = os.path.join(data_dir, f"wandb_cache/{run.id}.pkl")
         if run.state != "finished":
             continue
             
@@ -77,7 +77,7 @@ def extract_data(project_name, entity_name, cache_dir, hyperparam):
 
         print(f"Data saved for run {run.id}")
 
-    file_path = os.path.join("./data", f"{hyperparam}.csv")
+    file_path = os.path.join(data_dir, f"{hyperparam}.csv")
     df.to_csv(file_path)
 
 
@@ -85,9 +85,9 @@ if __name__=="__main__":
     wandb.login()
     args = tyro.cli(Args)
 
-    # Define where to store the cache files
-    if not os.path.exists(args.cache_dir):
-        os.makedirs(args.cache_dir)
+    # Define where to store the files
+    if not os.path.exists(args.data_dir):
+        os.makedirs(args.data_dir)
 
-    cache_runs(args.project_name,args.entity_name, args.cache_dir)
-    extract_data(args.project_name, args.entity_name, args.cache_dir, args.hyperparam)
+    cache_runs(args.project_name, args.entity_name, args.data_dir)
+    extract_data(args.project_name, args.entity_name, args.data_dir, args.hyperparam)
