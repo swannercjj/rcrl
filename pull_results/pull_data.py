@@ -51,7 +51,7 @@ def cache_runs(project_name, entity_name, data_dir):
 
 
 def extract_data(project_name, entity_name, data_dir, hyperparam):
-    df = pd.DataFrame(columns=['env_id', 'seed', hyperparam, 'episodic_return_average'])
+    df = pd.DataFrame(columns=['env_id', 'seed', hyperparam, 'mean_episodic_return'])
     api = wandb.Api(timeout=20)
     runs = api.runs(f"{entity_name}/{project_name}")
     for run in runs:
@@ -71,7 +71,8 @@ def extract_data(project_name, entity_name, data_dir, hyperparam):
             run_data.to_pickle(cache_path)
     
         data = run_data[['charts/episodic_return']]
-    
+
+        # Average of the whole lifetime
         dic = dict(data[~data['charts/episodic_return'].isnull()].mean())
         df.loc[len(df)] = [config.get('env_id'), config.get('seed'), config.get(hyperparam), dic.get('charts/episodic_return')]
 
