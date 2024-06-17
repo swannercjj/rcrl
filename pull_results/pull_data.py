@@ -77,9 +77,11 @@ def extract_data(project_name, entity_name, data_dir, hyperparam):
         df.loc[len(df)] = [config.get('env_id'), config.get('seed'), config.get(hyperparam), dic.get('charts/episodic_return')]
 
         print(f"Data saved for run {run.id}")
+        os.remove(cache_path)
 
     file_path = os.path.join(data_dir, f"{hyperparam}.csv")
     df.to_csv(file_path)
+    os.rmdir(os.path.join(data_dir, f"wandb_cache/"))
 
 
 if __name__=="__main__":
