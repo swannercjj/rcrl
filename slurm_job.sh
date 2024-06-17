@@ -1,3 +1,9 @@
+#!/bin/bash
+#SBATCH --account=def-mbowling
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=0-2:59
+
 declare -a command="$1"
 
 if [ "$SLURM_TMPDIR" != "" ]; then
