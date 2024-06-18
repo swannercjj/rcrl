@@ -3,6 +3,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=0-2:59
+#SBATCH --array=6-20
 
 declare -a command="$1"
 echo 'job script'
@@ -31,6 +32,6 @@ echo "Running experiment..."
 #com
 
 cd $SLURM_TMPDIR/project
-echo "Running command: $python_venv $command"
-eval "$python_venv $command"
+echo "Running command: $python_venv $command --seed $SLURM_ARRAY_TASK_ID"
+eval "$python_venv $command --seed $SLURM_ARRAY_TASK_ID"
 

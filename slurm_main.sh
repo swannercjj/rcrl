@@ -3,7 +3,6 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=0-2:59
-#SBATCH --array=6-20
 
 # this bash file creates a command that calls another script 'slurm_job.sh'. Hold values of seeds
 # other script unzips folder and runs the experiment
@@ -39,7 +38,7 @@ for env_id in "${ids[@]}"; do
         echo "Parameter: $param_name"
 
         for val in $values; do
-            command="dqn.py --wandb_project_name \"HyperParamSearch${param_name}\" --$param $val --seed $SLURM_ARRAY_TASK_ID --no-cuda --track --env-id $env_id"
+            command="dqn.py --wandb_project_name \"HyperParamSearch${param_name}\" --$param $val --no-cuda --track --env-id $env_id"
             echo "$command"
             sbatch slurm_job.sh "$command" 
         done
