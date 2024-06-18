@@ -23,8 +23,8 @@ if __name__=="__main__":
     # Read file
     df = pd.read_csv(file_path)
 
-    # Group by 'env_id' and 'learning_rate' and average 'mean_episodic_return'
-    grouped_df = df.groupby(['env_id', 'learning_rate'])['mean_episodic_return'].mean().reset_index()
+    # Group by 'env_id', hyperparameter and average 'mean_episodic_return'
+    grouped_df = df.groupby(['env_id', args.hyperparam])['mean_episodic_return'].mean().reset_index()
 
     # Plot the data
     plt.figure(figsize=(10, 6))
@@ -32,7 +32,7 @@ if __name__=="__main__":
     # Looping through environments
     for env_id in grouped_df['env_id'].unique():
         env_data = grouped_df[grouped_df['env_id'] == env_id]
-        plt.plot(env_data['learning_rate'], env_data['mean_episodic_return'], marker='o', label=f'{env_id}')
+        plt.plot(env_data[args.hyperparam], env_data['mean_episodic_return'], marker='o', label=f'{env_id}')
 
     plt.xlabel(args.hyperparam)
     plt.ylabel('mean_episodic_return')
