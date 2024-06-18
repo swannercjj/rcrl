@@ -3,9 +3,12 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=0-2:59
-#SBATCH --array=0-29
+#SBATCH --array=6-20
 
-# SOCKS5 Proxy
+declare -a command="$1"
+echo 'job script'
+echo $command
+#<<com
 if [ "$SLURM_TMPDIR" != "" ]; then
     echo "Setting up SOCKS5 proxy..."
     ssh -q -N -T -f -D 8888 `echo $SSH_CONNECTION | cut -d " " -f 3`
@@ -18,11 +21,6 @@ cd $SLURM_TMPDIR
 tar -xzf classicenv.tar.gz
 ls -l
 
-# echo "Copying code"
-# cp ~/projects/def-mbowling/gwynetha/rcrl/dqn.py $SLURM_TMPDIR/
-# cd $SLURM_TMPDIR
-# ls -l
-
 echo "Cloning repo..."
 git config --global http.proxy 'socks5://127.0.0.1:8888'
 git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
@@ -31,9 +29,9 @@ echo "Exporting env variables"
 export PYTHONPATH=$SLURM_TMPDIR/project/
 export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 echo "Running experiment..."
+#com
 
-cd $SLURM_TMPDIR/project #put project back in for cloning repo
-git checkout control_experiments
-$python_venv dqn.py --seed $SLURM_ARRAY_TASK_ID --track --wandb_project_name 'Acrobot_Trials2.0' --env_id 'Acrobot-v1'
-# Don't need this for wandb
-#cp -r runs ~/projects/def-mbowling/gwynetha/rcrl/control_runs
+cd $SLURM_TMPDIR/project
+echo "Running command: $python_venv $command --seed $SLURM_ARRAY_TASK_ID"
+eval "$python_venv $command --seed $SLURM_ARRAY_TASK_ID"
+
