@@ -41,7 +41,7 @@ for env_id in "${ids[@]}"; do
         for val in $values; do
             command="dqn.py --wandb_project_name \"HyperParamSearch${param_name}\" --$param $val --seed $SLURM_ARRAY_TASK_ID --no-cuda --track --env-id $env_id"
             echo "$command"
-            sbatch slurm_job.sh $command
+            sbatch slurm_job.sh "$command" 
         done
     done
 done

@@ -5,7 +5,9 @@
 #SBATCH --time=0-2:59
 
 declare -a command="$1"
-
+echo 'job script'
+echo $command
+#<<com
 if [ "$SLURM_TMPDIR" != "" ]; then
     echo "Setting up SOCKS5 proxy..."
     ssh -q -N -T -f -D 8888 `echo $SSH_CONNECTION | cut -d " " -f 3`
@@ -26,9 +28,9 @@ echo "Exporting env variables"
 export PYTHONPATH=$SLURM_TMPDIR/project/
 export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 echo "Running experiment..."
+#com
 
 cd $SLURM_TMPDIR/project
 echo "Running command: $python_venv $command"
-eval $python_venv $command
-# Don't need this for wandb
-#cp -r runs ~/projects/def-mbowling/gwynetha/rcrl/control_runs
+eval "$python_venv $command"
+
