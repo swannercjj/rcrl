@@ -58,7 +58,13 @@ def extract_data(project_name, entity_name, data_dir, hyperparam):
         cache_path = os.path.join(data_dir, f"wandb_cache/{run.id}.pkl")
         if run.state != "finished":
             continue
-            
+        
+        seed_value = run.config.get('seed')  
+    
+        # only wants seeds from 1-5    
+        if seed_value is None or seed_value not in range(1, 6):
+            continue
+
         config = {k:v.get('value') for k, v in json.loads(run.json_config).items()}
     
         if config.get(hyperparam) is None:
