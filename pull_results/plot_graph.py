@@ -43,20 +43,28 @@ if __name__=="__main__":
     plt.figure(figsize=(10, 6))
     labels = x_vals[args.hyperparam][:-1]
     
+    evenly_spaced_x = np.linspace(0,1,len(x_vals[args.hyperparam])-1)
+    range(len(x_vals[args.hyperparam])-1), 
     # Looping through environments
     for env_id in grouped_df['env_id'].unique():
         env_data = grouped_df[grouped_df['env_id'] == env_id]
-        plt.plot(env_data[args.hyperparam], env_data['mean_episodic_return'], marker='o', label=f'{env_id}')
+        #plt.plot(env_data[args.hyperparam], env_data['mean_episodic_return'], marker='o', label=f'{env_id}')
+        plt.plot(evenly_spaced_x, env_data['mean_episodic_return'], marker='o', label=f'{env_id}')
 
-    plt.xticks(range(len(x_vals[args.hyperparam])-1), sorted(labels))
     
+    plt.xticks(evenly_spaced_x, sorted(labels))
     plt.title("Mean Episodic Return of Varying "+x_vals[args.hyperparam][-1])
     plt.xlabel(args.hyperparam)
     plt.ylabel('Mean Episodic Return')
     plt.legend()
     plt.grid(True)
 
+    #ax1.xaxis.set_ticks(x)
+
+#ax2.plot(x.astype('str'), y)
+
     if not os.path.exists('./graphs'):
         os.mkdir('./graphs')
 
     plt.savefig(f"./graphs/{args.hyperparam}.png")
+    plt.close
