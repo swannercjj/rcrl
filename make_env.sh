@@ -1,6 +1,7 @@
 module load python/3.11.5 StdEnv/2023 swig && \
 	ssh -q -N -T -f -D 8888 `echo $SSH_CONNECTION | cut -d " " -f 3` && \
 	export ALL_PROXY=socks5h://localhost:8888
+	#export ALL_PROXY="https://localhost:8888/"
 
 mkdir -p /tmp/gwen/virtualenvs && \ 
 	cd /tmp/gwen/virtualenvs && \
@@ -8,9 +9,12 @@ mkdir -p /tmp/gwen/virtualenvs && \
 	virtualenv --no-download pyenv && \
 	source pyenv/bin/activate && \
 	echo "activated..." && \
-	pip install requests[socks] --no-index && \
+	pip install 'requests[socks]' --no-index && \
+	pip install pysocks --no-index && \
 	echo "has socks..." && \
-	pip install --no-cache-dir "gymnasium[atari,accept-rom-license]"
+	pip install --no-cache-dir "gymnasium[atari]" && \
+	pip install --no-cache-dir autorom && \
+	AutoROM -y && \
 	pip install --no-cache-dir "gymnasium[classic-control]" "gymnasium[box2d]" numpy "stable_baselines3==2.0.0a1" tqdm tyro torch tensorboard wandb --index-url https://pypi.org/simple --extra-index-url https://download.pytorch.org/whl/cpu && \
 	echo "finished installing packages" && \
 	cd /tmp/gwen/ && \
@@ -25,4 +29,4 @@ mkdir -p /tmp/gwen/virtualenvs && \
 
 echo "done"
 
-# added "gymnasium[atariaccept-rom-license]"
+# added "gymnasium[atari,accept-rom-license]"
