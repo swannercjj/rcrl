@@ -10,6 +10,8 @@ if [ "$SLURM_TMPDIR" != "" ]; then
     export ALL_PROXY=socks5h://localhost:8888
 fi
 
+module load python/3.11 StdEnv/2023 gcc opencv/4.8.1 swig 
+
 echo "Copying virtualenv..."
 cp ~/projects/def-mbowling/gwynetha/atarienv.tar.gz $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
