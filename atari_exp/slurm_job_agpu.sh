@@ -38,4 +38,5 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/atari_exp/dqn
     --exploration_fraction 0.10 \
     --batch_size 32 \
     --buffer_size 1000000 \
-    --train_frequency 4
+    --train_frequency 4 \
+    --env_id "BreakoutNoFrameskip-v4"
