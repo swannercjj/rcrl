@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash  
+#SBATCH --gpus-per-node=2 
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
@@ -14,9 +15,9 @@ fi
 module load python/3.11 StdEnv/2023 gcc opencv/4.8.1 swig 
 
 echo "Copying virtualenv..."
-cp ~/projects/def-mbowling/gwynetha/atarienv.tar.gz $SLURM_TMPDIR/
+cp ~/projects/def-mbowling/gwynetha/atarigpuenv.tar.gz $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
-tar -xzf atarienv.tar.gz
+tar -xzf atarigpuenv.tar.gz
 ls -l
 
 echo "Cloning repo..."
@@ -25,9 +26,8 @@ git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
 
 export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
-PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/atari_exp/dqn_atari.py \
+PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/atari_replicate_results/dqn_atari.py \
     --wandb_project_name 'Atari_Run_Replicate' \
-    --no-cuda \
     --seed $SLURM_ARRAY_TASK_ID \
     --total_timesteps 10000000 \
     --track \
