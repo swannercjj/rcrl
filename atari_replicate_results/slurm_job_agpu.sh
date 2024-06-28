@@ -26,7 +26,7 @@ git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
 
 export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
-PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/atari_exp/dqn_atari.py \
+PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/atari_replicate_results/dqn_atari.py \
     --wandb_project_name 'Atari_Run_GPU' \
     --seed $SLURM_ARRAY_TASK_ID \
     --total_timesteps 1000000 \
