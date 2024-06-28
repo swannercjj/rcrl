@@ -2,8 +2,8 @@
 #SBATCH --gpus-per-node=2 
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=64G
-#SBATCH --time=0-11:59
+#SBATCH --mem=32G
+#SBATCH --time=2:59:00
 #SBATCH --array=1-50
 
 if [ "$SLURM_TMPDIR" != "" ]; then
@@ -27,7 +27,16 @@ git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
 export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
 PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/atari_exp/dqn_atari.py \
-    --wandb_project_name 'Atari_Run_GPU' \
+    --wandb_project_name 'Atari_Run_Replicate' \
     --seed $SLURM_ARRAY_TASK_ID \
-    --total_timesteps 1000000 \
-    --track
+    --total_timesteps 10000000 \
+    --track \
+    --learning_rate 0.00025 \
+    --gamma 0.99 \
+    --start_e 1.0 \
+    --end_e 0.01 \
+    --exploration_fraction 0.10 \
+    --batch_size 32 \
+    --buffer_size 1000000 \
+    --train_frequency 4 \
+    --env_id "BreakoutNoFrameskip-v4"
