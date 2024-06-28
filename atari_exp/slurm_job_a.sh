@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=16G
-#SBATCH --time=0-2:59
-
+#SBATCH --mem=64G
+#SBATCH --time=0-11:59
+#SBATCH --array=1-50
 if [ "$SLURM_TMPDIR" != "" ]; then
     echo "Setting up SOCKS5 proxy..."
     ssh -q -N -T -f -D 8888 `echo $SSH_CONNECTION | cut -d " " -f 3`
@@ -25,6 +25,8 @@ git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
 export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
 PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/atari_exp/dqn_atari.py \
-    --wandb_project_name \"Atari_Run\" \
+    --wandb_project_name 'Atari_Run_CPU' \
     --no-cuda \
+    --seed $SLURM_ARRAY_TASK_ID \
+    --total_timesteps 1000000 \
     --track
