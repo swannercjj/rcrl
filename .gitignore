@@ -165,3 +165,6 @@ wandb
 control_runs
 .jpeg
 .jpg
+wandb_cache
+slurm-*
+atari_replicate_results/data/replicate.csv
