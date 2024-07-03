@@ -3,7 +3,7 @@
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=32G
-#SBATCH --time=2:59:00
+#SBATCH --time=3-0
 #SBATCH --array=1-50
 
 if [ "$SLURM_TMPDIR" != "" ]; then
@@ -39,4 +39,5 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/atari_replica
     --batch_size 32 \
     --buffer_size 1000000 \
     --train_frequency 4 \
-    --env_id "BreakoutNoFrameskip-v4"
+    --env_id "ALE/Enduro-v5"
+
