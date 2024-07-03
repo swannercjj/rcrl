@@ -259,7 +259,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
             model_path,
             make_env,
             args.env_id,
-            eval_episodes=10,
+            eval_episodes=100,
             run_name=f"{run_name}-eval",
             Model=QNetwork,
             device=device,
