@@ -26,14 +26,14 @@ def log_info(df):
     return data
 
 
-file_path = os.path.join(f"./atari_replicate_results/data/replicate.csv")
+file_path = os.path.join(f"./data/replicate_data.csv")
 df = pd.read_csv(file_path)
 data = log_info(df)
 new_df = pd.DataFrame(data, columns=['Game', 'Mean Episodic Return', "Num Runs"])
 
 print(new_df)
-#data_dir = "./results/"
-file_path = os.path.join("./atari_replicate_results/data/", f"replicate_results.csv")  
+#data_dir = "./results/" 
+file_path = os.path.join("./data/", f"replicate_results.csv")  
 new_df.to_csv(file_path)
 
 '''
