@@ -3,6 +3,9 @@ import os
 import random
 import time
 from dataclasses import dataclass
+import matplotlib
+import matplotlib.pyplot as plt 
+import sys 
 
 import gymnasium as gym
 import numpy as np
@@ -20,6 +23,9 @@ from stable_baselines3.common.atari_wrappers import (
 )
 from stable_baselines3.common.buffers import ReplayBuffer
 from torch.utils.tensorboard import SummaryWriter
+
+
+from PIL import Image # used for saving image
 
 
 @dataclass
@@ -85,6 +91,7 @@ def make_env(env_id, seed, idx, capture_video, run_name):
             env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
         else:
             env = gym.make(env_id)
+            # render_mode='human', full_action_space=False, repeat_action_probability=0.1, obs_type='rgb'
         env = gym.wrappers.RecordEpisodeStatistics(env)
 
         env = NoopResetEnv(env, noop_max=30)
@@ -94,6 +101,7 @@ def make_env(env_id, seed, idx, capture_video, run_name):
             env = FireResetEnv(env)
         env = ClipRewardEnv(env)
         env = gym.wrappers.ResizeObservation(env, (84, 84))
+      
         env = gym.wrappers.GrayScaleObservation(env)
         env = gym.wrappers.FrameStack(env, 4)
 
@@ -173,12 +181,13 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         [make_env(args.env_id, args.seed + i, i, args.capture_video, run_name) for i in range(args.num_envs)]
     )
     assert isinstance(envs.single_action_space, gym.spaces.Discrete), "only discrete action space is supported"
-
+    np.set_printoptions(threshold=sys.maxsize) # be able to see full np array when printed
     q_network = QNetwork(envs).to(device)
     optimizer = optim.Adam(q_network.parameters(), lr=args.learning_rate)
     target_network = QNetwork(envs).to(device)
     target_network.load_state_dict(q_network.state_dict())
 
+    print()
     rb = ReplayBuffer(
         args.buffer_size,
         envs.single_observation_space,
@@ -187,11 +196,21 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         optimize_memory_usage=True,
         handle_timeout_termination=False,
     )
-    start_time = time.time()
-
+   
     # TRY NOT TO MODIFY: start the game
+
     obs, _ = envs.reset(seed=args.seed)
     for global_step in range(args.total_timesteps):
+        if global_step == 10000:
+            im = Image.fromarray(obs[0,0])
+            print(obs[0,0])
+            im.save("before_obs.jpeg")
+            before = obs[0,0]
+            f = open("before_obs.txt", "a")
+            f.write(str(before))
+            f.close()
+            #input("sanity check at 10000 steps, before") # uncomment in local runs 
+   
         # ALGO LOGIC: put action logic here
         epsilon = linear_schedule(args.start_e, args.end_e, args.exploration_fraction * args.total_timesteps, global_step)
         if random.random() < epsilon:
@@ -202,7 +221,7 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
 
         # TRY NOT TO MODIFY: execute the game and log data.
         next_obs, rewards, terminations, truncations, infos = envs.step(actions)
-
+        
         # TRY NOT TO MODIFY: record rewards for plotting purposes
         if "final_info" in infos:
             for info in infos["final_info"]:
@@ -221,6 +240,18 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         # TRY NOT TO MODIFY: CRUCIAL step easy to overlook
         obs = next_obs
 
+        if global_step == 10000:
+            im = Image.fromarray(obs[0,0])
+            print("actions",actions)
+            name = "after_obs_"+str(actions)+"_"+str(global_step)
+            im.save(name+".jpeg")
+            after = obs[0,0]
+            f = open(name+".txt", "a")
+            f.write(str(after))
+            f.close()
+            #input("sanity check at 10000 steps, after")
+
+    
         # ALGO LOGIC: training.
         if global_step > args.learning_starts:
             if global_step % args.train_frequency == 0:
