@@ -29,5 +29,6 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/cleanrl/dqn_a
     --wandb_project_name 'Sanity Checks' \
     --no-cuda \
     --seed $SLURM_ARRAY_TASK_ID \
+    --track \
     --total_timesteps 10000000 \
     --env_id "PongNoFrameskip-v4"
