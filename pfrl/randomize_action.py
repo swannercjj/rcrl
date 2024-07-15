@@ -27,7 +27,7 @@ class RandomizeAction(gym.ActionWrapper):
            env.action_space, gym.spaces.Discrete
         ), "RandomizeAction supports only gym.spaces.Discrete as an action space" 
         self._random_fraction = random_fraction
-        self._np_random = np.random.RandomState() # AttributeError, can't set attribute. Can I change the name of the variable?
+        self.np_random = np.random.RandomState() # AttributeError, can't set attribute. Can I change the name of the variable
 
     def action(self, action):
         if self._np_random.rand() < self._random_fraction:
@@ -37,4 +37,4 @@ class RandomizeAction(gym.ActionWrapper):
 
     def seed(self, seed):
         super().seed(seed)
-        self._np_random.seed(seed)
+        self.np_random.seed(seed)
