@@ -11,7 +11,10 @@ from pfrl import nn as pnn
 from pfrl import replay_buffers, utils
 from pfrl.initializers import init_chainer_default
 from pfrl.q_functions import DiscreteActionValueHead
-from pfrl.wrappers import atari_wrappers
+import atari_wrappers
+import randomize_action
+#from pfrl.wrappers import atari_wrappers
+
 
 
 def main():
@@ -19,7 +22,7 @@ def main():
     parser.add_argument(
         "--env",
         type=str,
-        default="BreakoutNoFrameskip-v4",
+        default="ALE/Breakout-v5",
         help="OpenAI Atari domain to perform algorithm on.",
     )
     parser.add_argument(
@@ -96,14 +99,15 @@ def main():
         # Use different random seeds for train and test envs
         env_seed = test_seed if test else train_seed
         env = atari_wrappers.wrap_deepmind(
-            atari_wrappers.make_atari_sticky(args.env, max_frames=None), # originally used to be make_atari()
+            atari_wrappers.make_atari_sticky(args.env, max_frames=None), # originally used to be make_atari
             episode_life=not test,
             clip_rewards=not test,
         )
         env.seed(int(env_seed))
         if test:
             # Randomize actions like epsilon-greedy in evaluation as well
-            env = pfrl.wrappers.RandomizeAction(env, 0.05)
+            #env = pfrl.wrappers.RandomizeAction(env, 0.05)
+            env = randomize_action.RandomizeAction(env, 0.05)
         if args.monitor:
             env = pfrl.wrappers.Monitor(
                 env, args.outdir, mode="evaluation" if test else "training"
@@ -116,7 +120,7 @@ def main():
     eval_env = make_env(test=True)
 
     n_actions = env.action_space.n
-    q_func = nn.Sequential(
+    q_func = nn.Sequential(     
         pnn.LargeAtariCNN(),
         init_chainer_default(nn.Linear(512, n_actions)),
         DiscreteActionValueHead(),
