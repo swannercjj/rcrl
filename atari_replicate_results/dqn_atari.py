@@ -25,7 +25,7 @@ from stable_baselines3.common.buffers import ReplayBuffer
 from torch.utils.tensorboard import SummaryWriter
 
 
-from PIL import Image # used for saving image
+from PIL import Image # used for saving image https://docs.wandb.ai/guides/track/log/media#:~:text=We%20support%20images%2C%20video%2C%20audio,runs%2C%20models%2C%20and%20datasets.
 
 
 @dataclass
@@ -82,6 +82,8 @@ class Args:
     """timestep to start learning"""
     train_frequency: int = 4
     """the frequency of training"""
+    sanity_mod: int = 1000000 # for image observation checks
+    """how often to check observations"""
 
 
 def make_env(env_id, seed, idx, capture_video, run_name):
@@ -147,6 +149,7 @@ if __name__ == "__main__":
 poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-license]==0.28.1"  "ale-py==0.8.1" 
 """
         )
+    begin = time.time()
     args = tyro.cli(Args)
     assert args.num_envs == 1, "vectorized envs are not supported at the moment"
     run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
@@ -197,19 +200,34 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         handle_timeout_termination=False,
     )
    
-    # TRY NOT TO MODIFY: start the game
+    start_time = time.time()
 
+    # TRY NOT TO MODIFY: start the game
+    sanity_dict = {} # {step:[(Image.fromarray, obs[0,0]), (Image.fromarray, obs[0,0])]} {step:[(before),(after)]}
     obs, _ = envs.reset(seed=args.seed)
+    actions = np.array([0 for _ in range(envs.num_envs)]) # initial action = 0, reset noop
+    freq_i = 0
+    check = False
     for global_step in range(args.total_timesteps):
-        if global_step == 10000:
-            im = Image.fromarray(obs[0,0])
-            print(obs[0,0])
-            im.save("before_obs.jpeg")
-            before = obs[0,0]
-            f = open("before_obs.txt", "a")
-            f.write(str(before))
-            f.close()
-            #input("sanity check at 10000 steps, before") # uncomment in local runs 
+
+        # if args.track and global_step%args.sanity_mod == 0:
+        #     print('sanity step', global_step)
+        #     before = obs[0,0]
+        #     im = Image.fromarray(before)
+        #     #print(before)
+        #     name = str(args.env_id)+"before_obs_"+str(actions)+"_"+str(global_step)+"_"+str(args.seed)+"_"+str(begin)
+        #     sanity_dict[global_step] = [before]
+        #     #im.save(name+".jpeg")
+        #     #f = open(name+".txt", "a")
+        #     #f.write(str(before))
+        #     #f.close()
+        #     #input("sanity check at 10000 steps, before") # uncomment in local runs 
+        #     images = wandb.Image(before, caption=name)
+        #     wandb.log({"Sanity Check": images})
+        #     check = True
+        name = str(args.env_id)+"before_obs_"+str(actions)+"_"+str(global_step)+"_"+str(args.seed)+"_"+str(begin)    
+        images = wandb.Image(obs[0,0], caption=name)
+        wandb.log({"Sanity Check": images})     
    
         # ALGO LOGIC: put action logic here
         epsilon = linear_schedule(args.start_e, args.end_e, args.exploration_fraction * args.total_timesteps, global_step)
@@ -240,21 +258,30 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
         # TRY NOT TO MODIFY: CRUCIAL step easy to overlook
         obs = next_obs
 
-        if global_step == 10000:
-            im = Image.fromarray(obs[0,0])
-            print("actions",actions)
-            name = "after_obs_"+str(actions)+"_"+str(global_step)
-            im.save(name+".jpeg")
-            after = obs[0,0]
-            f = open(name+".txt", "a")
-            f.write(str(after))
-            f.close()
-            #input("sanity check at 10000 steps, after")
-
-    
+        # if args.track and freq_i == args.train_frequency+1:
+        #     after = obs[0,0]
+        #     print(global_step)
+        #     im = Image.fromarray(obs[0,0])
+        #     #print("actions",actions)
+        #     name = str(args.env_id)+"after_obs_"+str(actions)+"_"+str(global_step)+"_"+str(args.seed)+"_"+str(begin)
+        #     #im.save(name+".jpeg")
+        #     sanity_dict[global_step-args.train_frequency-1].append(after)
+        #     #f = open(name+".txt", "a")
+        #     #f.write(str(after))
+        #     #f.close()
+        #     #input("sanity check at 10000 steps, after")
+        #     images = wandb.Image(before, caption=name)
+        #     wandb.log({"Sanity Check": images})
+        #     freq_i = 0
+        #     check = False
+        # if check:
+        #     freq_i += 1
+        name = str(args.env_id)+"after_obs_"+str(actions)+"_"+str(global_step)+"_"+str(args.seed)+"_"+str(begin)    
+        images = wandb.Image(obs[0,0], caption=name)
+        wandb.log({"Sanity Check": images})   
         # ALGO LOGIC: training.
         if global_step > args.learning_starts:
-            if global_step % args.train_frequency == 0:
+            if global_step % args.train_frequency == 0: 
                 data = rb.sample(args.batch_size)
                 with torch.no_grad():
                     target_max, _ = target_network(data.next_observations).max(dim=1)
@@ -306,5 +333,8 @@ poetry run pip install "stable_baselines3==2.0.0a1" "gymnasium[atari,accept-rom-
             repo_id = f"{args.hf_entity}/{repo_name}" if args.hf_entity else repo_name
             push_to_hub(args, episodic_returns, repo_id, "DQN", f"runs/{run_name}", f"videos/{run_name}-eval")
 
+    
+   
+    wandb.log(sanity_dict)
     envs.close()
     writer.close()
