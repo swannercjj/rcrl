@@ -13,6 +13,7 @@ from pfrl.initializers import init_chainer_default
 from pfrl.q_functions import DiscreteActionValueHead
 import atari_wrappers
 import randomize_action
+import train_agent
 #from pfrl.wrappers import atari_wrappers
 
 
@@ -79,6 +80,8 @@ def main():
     parser.add_argument("--eval-n-steps", type=int, default=125000)
     parser.add_argument("--eval-interval", type=int, default=250000)
     parser.add_argument("--n-best-episodes", type=int, default=30)
+    parser.add_argument("--track", type=bool, default=True)
+    parser.add_argument("--wandb_project_name", type=str, default="uncategorized")
     args = parser.parse_args()
 
     import logging
@@ -94,6 +97,18 @@ def main():
 
     args.outdir = experiments.prepare_output_dir(args, args.outdir)
     print("Output files are saved in {}".format(args.outdir))
+    import wandb, time
+    run_name = f"{args.env}__{args.seed}__{int(time.time())}"
+
+    if args.track:
+        wandb.init(
+            project=args.wandb_project_name,
+            #sync_tensorboard=True,
+            config=vars(args),
+            name=run_name,
+            monitor_gym=True,
+            save_code=True,
+        )
 
     def make_env(test):
         # Use different random seeds for train and test envs
@@ -191,7 +206,7 @@ def main():
             )
         )
     else:
-        experiments.train_agent_with_evaluation(
+        train_agent.train_agent_with_evaluation(
             agent=agent,
             env=env,
             steps=args.steps,
