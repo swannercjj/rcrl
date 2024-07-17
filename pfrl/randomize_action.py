@@ -27,14 +27,14 @@ class RandomizeAction(gym.ActionWrapper):
             env.action_space, gym.spaces.Discrete
         ), "RandomizeAction supports only gym.spaces.Discrete as an action space"
         self._random_fraction = random_fraction
-        self._np_random = np.random.RandomState()
+        self.np_random = np.random.RandomState()
 
     def action(self, action):
-        if self._np_random.rand() < self._random_fraction:
-            return self._np_random.randint(self.env.action_space.n)
+        if self.np_random.rand() < self._random_fraction:
+            return self.np_random.randint(self.env.action_space.n)
         else:
             return action
 
     def seed(self, seed):
         super().seed(seed)
-        self._np_random.seed(seed)
+        self.np_random.seed(seed)
