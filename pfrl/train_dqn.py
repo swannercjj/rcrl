@@ -80,8 +80,11 @@ def main():
     parser.add_argument("--eval-n-steps", type=int, default=125000)
     parser.add_argument("--eval-interval", type=int, default=250000)
     parser.add_argument("--n-best-episodes", type=int, default=30)
+
+    # added for logging
     parser.add_argument("--track", type=bool, default=True)
     parser.add_argument("--wandb_project_name", type=str, default="uncategorized")
+    parser.add_argument("--sanity_mod", type=int, default=None)
     args = parser.parse_args()
 
     import logging
@@ -216,6 +219,7 @@ def main():
             outdir=args.outdir,
             save_best_so_far_agent=True,
             eval_env=eval_env,
+            sanity_mod=args.sanity_mod, ### for image observations checks
         )
 
         dir_of_best_network = os.path.join(args.outdir, "best")
