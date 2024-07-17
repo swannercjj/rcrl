@@ -119,7 +119,8 @@ def train_agent(
 
             if episode_end:
                 if t == steps:
-                    wandb.log({"Sanity Check": im_obs})
+                    if sanity_mod !=None:
+                        wandb.log({"Sanity Check": im_obs})
                     break
                 # Start a new episode
                 episode_r = 0
@@ -245,6 +246,7 @@ def train_agent_with_evaluation(
         step_hooks=step_hooks,
         eval_during_episode=eval_during_episode,
         logger=logger,
+        sanity_mod=sanity_mod
     )
 
     return agent, eval_stats_history
