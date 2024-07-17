@@ -68,6 +68,7 @@ def train_agent(
     eval_stats_history = []  # List of evaluation episode stats dict
     episode_len = 0
     try:
+        action = 0
         while t < steps:
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = "before_obs_"+str(action)+"_"+str(t)+"_"+str(begin)
