@@ -1,6 +1,7 @@
 import argparse
 import json
 import os
+import time
 
 import numpy as np
 import torch.nn as nn
@@ -11,15 +12,43 @@ from pfrl import nn as pnn
 from pfrl import replay_buffers, utils
 from pfrl.initializers import init_chainer_default
 from pfrl.q_functions import DiscreteActionValueHead
-from pfrl.wrappers import atari_wrappers
+import atari_wrappers, train_agent
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--exp_name",
+        type=str,
+        default=os.path.basename(__file__)[: -len(".py")],
+        help="Experiment name."
+    )
+
+    parser.add_argument(
+        "--track",
+        action="store_true",
+        default=False,
+        help="Log results to wandb."
+    )
+
+    parser.add_argument(
+        "--wandb_project_name",
+        type=str,
+        default="pfrl_test",
+        help="Wandb project's name."
+    )
+
+    parser.add_argument(
+        "--wandb_entity",
+        type=str,
+        default="rcrl",
+        help="Entity (team) of wandb's project."
+    )
+
+    parser.add_argument(
         "--env",
         type=str,
-        default="BreakoutNoFrameskip-v4",
+        default="ALE/Breakout-v5",
         help="OpenAI Atari domain to perform algorithm on.",
     )
     parser.add_argument(
@@ -81,6 +110,32 @@ def main():
     import logging
 
     logging.basicConfig(level=args.log_level)
+    # logger = None
+
+    # wandb logging
+    if args.track:
+        import wandb
+        run_name = f"{args.env}__{args.exp_name}__{args.seed}__{int(time.time())}"
+        # class WandbLoggingHandler(logging.Handler):
+        #     def emit(self, record):
+        #         try:
+        #             if "R" in record.msg:
+        #                 wandb.log({"episodic_return": record.args[3]}, step=record.args[1])
+        #         except Exception:
+        #             self.handleError(record)
+
+        wandb.init(
+            project=args.wandb_project_name,
+            entity=args.wandb_entity,
+            sync_tensorboard=True,
+            config=vars(args),
+            name=run_name,
+            monitor_gym=True,
+            save_code=True,
+        )
+        # logger = logging.getLogger(__name__)
+        # logger.setLevel(logging.INFO)
+        # logger.addHandler(WandbLoggingHandler())
 
     # Set a random seed used in PFRL.
     utils.set_random_seed(args.seed)
@@ -187,7 +242,7 @@ def main():
             )
         )
     else:
-        experiments.train_agent_with_evaluation(
+        train_agent.train_agent_with_evaluation(
             agent=agent,
             env=env,
             steps=args.steps,
@@ -197,6 +252,7 @@ def main():
             outdir=args.outdir,
             save_best_so_far_agent=True,
             eval_env=eval_env,
+            use_tensorboard=True,
         )
 
         dir_of_best_network = os.path.join(args.outdir, "best")
