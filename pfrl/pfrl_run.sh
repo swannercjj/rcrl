@@ -30,6 +30,6 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --env "ALE/Pong-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
-    --wanb_project_name 'Pfrl Replicate Pong' \
+    --wandb_project_name 'Pfrl Replicate Pong' \
     --sanity_mod 1000000 \
     --steps 10000000
