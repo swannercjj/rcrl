@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=32G
 #SBATCH --time=3-0
-#SBATCH --array=1,2
+#SBATCH --array=1-50
 
 if [ "$SLURM_TMPDIR" != "" ]; then
     echo "Setting up SOCKS5 proxy..."
@@ -30,6 +30,6 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --env "ALE/Pong-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
     --track True \
-    --wanb_project_name 'Pfrl Replicate' \
+    --wanb_project_name 'Pfrl Replicate Pong' \
     --sanity_mod 1000000 \
     --steps 10000000
