@@ -10,8 +10,8 @@ mkdir -p /tmp/gwen/virtualenvs && \
 	source pyenv/bin/activate && \
 	echo "activated..." && \
 	pip install 'requests[socks]' --no-index && \
-	pip install --no-cache-dir autorom gymnasium "gymnasium[classic-control,box2d,atari,other]" "numpy<2" "stable_baselines3==2.0.0a1" tqdm tyro torch tensorboard wandb --index-url https://pypi.org/simple --extra-index-url https://download.pytorch.org/whl/cpu && \
-	AutoROM -y && \
+	pip install --no-cache-dir filelock pillow autorom gymnasium "gymnasium[classic-control,box2d,atari,other]" "numpy<2" "stable_baselines3==2.0.0a1" tqdm tyro torch tensorboard wandb --index-url https://pypi.org/simple --extra-index-url https://download.pytorch.org/whl/cpu && \
+	AutoROM -y && \ 
 	echo "finished installing packages" && \
 	pip list && \
 
@@ -26,4 +26,3 @@ mkdir -p /tmp/gwen/virtualenvs && \
 	rm -fr /tmp/gwen
 
 echo "done"
-
