@@ -5,6 +5,7 @@ import os
 import numpy as np
 import torch.nn as nn
 
+import time
 import pfrl
 from pfrl import agents, experiments, explorers
 from pfrl import nn as pnn
@@ -20,6 +21,33 @@ import train_agent
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--exp_name",
+        type=str,
+        default=os.path.basename(__file__)[: -len(".py")],
+        help="Experiment name."
+    )
+
+    parser.add_argument(
+        "--track",
+        action="store_true",
+        default=False,
+        help="Log results to wandb."
+    )
+
+    parser.add_argument(
+        "--wandb_project_name",
+        type=str,
+        default="pfrl_test",
+        help="Wandb project's name."
+    )
+
+    parser.add_argument(
+        "--wandb_entity",
+        type=str,
+        default="rcrl",
+        help="Entity (team) of wandb's project."
+    )
     parser.add_argument(
         "--env",
         type=str,
@@ -82,14 +110,38 @@ def main():
     parser.add_argument("--n-best-episodes", type=int, default=30)
 
     # added for logging
-    parser.add_argument("--track", type=bool, default=True)
-    parser.add_argument("--wandb_project_name", type=str, default="uncategorized")
     parser.add_argument("--sanity_mod", type=int, default=None)
     args = parser.parse_args()
 
     import logging
 
     logging.basicConfig(level=args.log_level)
+    # logger = None
+
+    # wandb logging
+    if args.track:
+        import wandb
+        run_name = f"{args.env}__{args.exp_name}__{args.seed}__{int(time.time())}"
+        # class WandbLoggingHandler(logging.Handler):
+        #     def emit(self, record):
+        #         try:
+        #             if "R" in record.msg:
+        #                 wandb.log({"episodic_return": record.args[3]}, step=record.args[1])
+        #         except Exception:
+        #             self.handleError(record)
+
+        wandb.init(
+            project=args.wandb_project_name,
+            entity=args.wandb_entity,
+            sync_tensorboard=True,
+            config=vars(args),
+            name=run_name,
+            monitor_gym=True,
+            save_code=True,
+        )
+        # logger = logging.getLogger(__name__)
+        # logger.setLevel(logging.INFO)
+        # logger.addHandler(WandbLoggingHandler())
 
     # Set a random seed used in PFRL.
     utils.set_random_seed(args.seed)
@@ -100,18 +152,7 @@ def main():
 
     args.outdir = experiments.prepare_output_dir(args, args.outdir)
     print("Output files are saved in {}".format(args.outdir))
-    import wandb, time
     run_name = f"{args.env}__{args.seed}__{int(time.time())}"
-
-    if args.track:
-        wandb.init(
-            project=args.wandb_project_name,
-            #sync_tensorboard=True,
-            config=vars(args),
-            name=run_name,
-            monitor_gym=True,
-            save_code=True,
-        )
 
     def make_env(test):
         # Use different random seeds for train and test envs
