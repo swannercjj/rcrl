@@ -1,7 +1,6 @@
 import argparse
 import json
 import os
-import time
 
 import numpy as np
 import torch.nn as nn
@@ -12,39 +11,15 @@ from pfrl import nn as pnn
 from pfrl import replay_buffers, utils
 from pfrl.initializers import init_chainer_default
 from pfrl.q_functions import DiscreteActionValueHead
-import atari_wrappers, train_agent
+import atari_wrappers
+#import randomize_action
+import train_agent
+#from pfrl.wrappers import atari_wrappers
+
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--exp_name",
-        type=str,
-        default=os.path.basename(__file__)[: -len(".py")],
-        help="Experiment name."
-    )
-
-    parser.add_argument(
-        "--track",
-        action="store_true",
-        default=False,
-        help="Log results to wandb."
-    )
-
-    parser.add_argument(
-        "--wandb_project_name",
-        type=str,
-        default="pfrl_test",
-        help="Wandb project's name."
-    )
-
-    parser.add_argument(
-        "--wandb_entity",
-        type=str,
-        default="rcrl",
-        help="Entity (team) of wandb's project."
-    )
-
     parser.add_argument(
         "--env",
         type=str,
@@ -105,37 +80,16 @@ def main():
     parser.add_argument("--eval-n-steps", type=int, default=125000)
     parser.add_argument("--eval-interval", type=int, default=250000)
     parser.add_argument("--n-best-episodes", type=int, default=30)
+
+    # added for logging
+    parser.add_argument("--track", type=bool, default=True)
+    parser.add_argument("--wandb_project_name", type=str, default="uncategorized")
+    parser.add_argument("--sanity_mod", type=int, default=None)
     args = parser.parse_args()
 
     import logging
 
     logging.basicConfig(level=args.log_level)
-    # logger = None
-
-    # wandb logging
-    if args.track:
-        import wandb
-        run_name = f"{args.env}__{args.exp_name}__{args.seed}__{int(time.time())}"
-        # class WandbLoggingHandler(logging.Handler):
-        #     def emit(self, record):
-        #         try:
-        #             if "R" in record.msg:
-        #                 wandb.log({"episodic_return": record.args[3]}, step=record.args[1])
-        #         except Exception:
-        #             self.handleError(record)
-
-        wandb.init(
-            project=args.wandb_project_name,
-            entity=args.wandb_entity,
-            sync_tensorboard=True,
-            config=vars(args),
-            name=run_name,
-            monitor_gym=True,
-            save_code=True,
-        )
-        # logger = logging.getLogger(__name__)
-        # logger.setLevel(logging.INFO)
-        # logger.addHandler(WandbLoggingHandler())
 
     # Set a random seed used in PFRL.
     utils.set_random_seed(args.seed)
@@ -146,18 +100,31 @@ def main():
 
     args.outdir = experiments.prepare_output_dir(args, args.outdir)
     print("Output files are saved in {}".format(args.outdir))
+    import wandb, time
+    run_name = f"{args.env}__{args.seed}__{int(time.time())}"
+
+    if args.track:
+        wandb.init(
+            project=args.wandb_project_name,
+            #sync_tensorboard=True,
+            config=vars(args),
+            name=run_name,
+            monitor_gym=True,
+            save_code=True,
+        )
 
     def make_env(test):
         # Use different random seeds for train and test envs
         env_seed = test_seed if test else train_seed
         env = atari_wrappers.wrap_deepmind(
-            atari_wrappers.make_atari_sticky(args.env, max_frames=None), # originally used to be make_atari()
+            atari_wrappers.make_atari_sticky(args.env, max_frames=None), # originally used to be make_atari
             episode_life=not test,
             clip_rewards=not test,
         )
         env.seed(int(env_seed))
         if test:
             # Randomize actions like epsilon-greedy in evaluation as well
+            #env = pfrl.wrappers.RandomizeAction(env, 0.05)
             env = pfrl.wrappers.RandomizeAction(env, 0.05)
         if args.monitor:
             env = pfrl.wrappers.Monitor(
@@ -171,7 +138,7 @@ def main():
     eval_env = make_env(test=True)
 
     n_actions = env.action_space.n
-    q_func = nn.Sequential(
+    q_func = nn.Sequential(     
         pnn.LargeAtariCNN(),
         init_chainer_default(nn.Linear(512, n_actions)),
         DiscreteActionValueHead(),
@@ -252,7 +219,7 @@ def main():
             outdir=args.outdir,
             save_best_so_far_agent=True,
             eval_env=eval_env,
-            use_tensorboard=True,
+            sanity_mod=args.sanity_mod, ### for image observations checks
         )
 
         dir_of_best_network = os.path.join(args.outdir, "best")
