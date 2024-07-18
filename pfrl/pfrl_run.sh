@@ -29,7 +29,7 @@ export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dqn.py \
     --env "ALE/Pong-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
-    --track True \
+    --track \
     --wanb_project_name 'Pfrl Replicate Pong' \
     --sanity_mod 1000000 \
     --steps 10000000
