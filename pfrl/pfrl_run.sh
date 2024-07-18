@@ -33,3 +33,5 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --wandb_project_name 'Pfrl Replicate Pong' \
     --sanity_mod 1000000 \
     --steps 10000000
+
+cp -r results '/home/gwynetha/projects/def-mbowling/gwynetha/rcrl/pfrl/results'
