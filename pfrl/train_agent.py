@@ -1,5 +1,9 @@
 import logging
 import os
+import wandb
+import time
+import numpy as np
+from PIL import Image 
 
 from pfrl.experiments.evaluator import Evaluator, save_agent
 from pfrl.utils.ask_yes_no import ask_yes_no
@@ -20,6 +24,19 @@ def ask_and_save_agent_replay_buffer(agent, t, outdir, suffix=""):
     ):  # NOQA
         save_agent_replay_buffer(agent, t, outdir, suffix=suffix)
 
+def image_obs(obs, im_obs, name=str): # for logging images on wandb
+    '''obs is an array of the observation'''
+    im = Image.fromarray(obs)
+    print(obs)
+    #input('wait')
+    im.save(str(name)+".jpeg")
+    f = open(str(name)+".txt", "a")
+    f.write(str(obs))
+    f.close()
+    # create wandb image, put in list of images
+    im_wandb = wandb.Image(im, caption=name)
+    im_obs.append(im_wandb)
+    #wandb.log({name: im_wandb})
 
 def train_agent(
     agent,
@@ -35,7 +52,9 @@ def train_agent(
     eval_during_episode=False,
     use_tensorboard=False,
     logger=None,
+    sanity_mod=None, ### for image observations checks
 ):
+    begin = int(time.time())
     logger = logger or logging.getLogger(__name__)
 
     episode_r = 0
@@ -43,6 +62,7 @@ def train_agent(
 
     # o_0, r_0
     obs , info = env.reset()
+    im_obs = []
 
     t = step_offset
     if hasattr(agent, "t"):
@@ -51,11 +71,26 @@ def train_agent(
     eval_stats_history = []  # List of evaluation episode stats dict
     episode_len = 0
     try:
+        action = 0
         while t < steps:
+            if sanity_mod !=None and t%sanity_mod == 0:
+                name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
+                obs_numpy = np.asarray(obs)
+                print(obs_numpy[0].shape)
+                #input(type(obs_numpy))
+                before = obs_numpy[0]
+                image_obs(before, im_obs, name)
             # a_t
             action = agent.act(obs)
             # o_{t+1}, r_{t+1}
             obs, r, terminated, truncated, info = env.step(action)
+            if sanity_mod !=None and t%sanity_mod == 0:
+                name = str(t)+"+1_"+"after_obs_"+str(action)+"_"+str(begin)
+                obs_numpy = np.asarray(obs)
+                after = obs_numpy[0]
+                image_obs(after, im_obs, name)
+
+
             t += 1
             episode_r += r
             episode_len += 1
@@ -95,6 +130,8 @@ def train_agent(
 
             if episode_end:
                 if t == steps:
+                    if sanity_mod !=None:
+                        wandb.log({"Sanity Check": im_obs})
                     break
                 # Start a new episode
                 episode_r = 0
@@ -134,6 +171,8 @@ def train_agent_with_evaluation(
     use_tensorboard=False,
     eval_during_episode=False,
     logger=None,
+    sanity_mod=None, ### for image observations checks
+
 ):
     """Train an agent while periodically evaluating it.
 
@@ -220,6 +259,7 @@ def train_agent_with_evaluation(
         eval_during_episode=eval_during_episode,
         use_tensorboard=use_tensorboard,
         logger=logger,
+        sanity_mod=sanity_mod
     )
 
     return agent, eval_stats_history
