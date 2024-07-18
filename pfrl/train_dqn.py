@@ -260,6 +260,7 @@ def main():
             outdir=args.outdir,
             save_best_so_far_agent=True,
             eval_env=eval_env,
+            use_tensorboard=True,
             sanity_mod=args.sanity_mod, ### for image observations checks
         )
 
