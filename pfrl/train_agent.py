@@ -4,6 +4,7 @@ import wandb
 import time
 import numpy as np
 from PIL import Image 
+import sys
 
 from pfrl.experiments.evaluator import Evaluator, save_agent
 from pfrl.utils.ask_yes_no import ask_yes_no
@@ -28,15 +29,17 @@ def image_obs(obs, im_obs, name=str): # for logging images on wandb
     '''obs is an array of the observation'''
     im = Image.fromarray(obs)
     print(obs)
-    #input('wait')
-    im.save(str(name)+".jpeg")
-    f = open(str(name)+".txt", "a")
-    f.write(str(obs))
-    f.close()
+    # uncomment for the images to be saved locally
+    # im.save(str(name)+".jpeg")
+    # f = open(str(name)+".txt", "a")
+    # f.write(str(obs))
+    # f.close()
+    
     # create wandb image, put in list of images
     im_wandb = wandb.Image(im, caption=name)
     im_obs.append(im_wandb)
-    #wandb.log({name: im_wandb})
+
+    #wandb.log({name: im_wandb}) # for logging one by one
 
 def train_agent(
     agent,
@@ -70,16 +73,23 @@ def train_agent(
 
     eval_stats_history = []  # List of evaluation episode stats dict
     episode_len = 0
+
     try:
         action = 0
         while t < steps:
-            if sanity_mod !=None and t%sanity_mod == 0:
+            if t ==0: #Unit test to see if it's the same first frame
+                pathname= os.path.join(os.getcwd(),'frame_check', 'first_frames.npz')
+                saved_dict = np.load(pathname)
+                first_frame = saved_dict[str(env.spec.id)]
+                assert (np.asarray(obs)==first_frame).all(), 'The reset frame does not match the reset state'
+
+            if sanity_mod !=None and t%sanity_mod == 0: # visual tests
                 name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
-                print(obs_numpy[0].shape)
-                #input(type(obs_numpy))
+                #print(obs_numpy[0].shape)
                 before = obs_numpy[0]
                 image_obs(before, im_obs, name)
+
             # a_t
             action = agent.act(obs)
             # o_{t+1}, r_{t+1}
@@ -131,7 +141,7 @@ def train_agent(
             if episode_end:
                 if t == steps:
                     if sanity_mod !=None:
-                        wandb.log({"Sanity Check": im_obs})
+                        wandb.log({"Sanity Check": im_obs}) #save all images once entire run is finished
                     break
                 # Start a new episode
                 episode_r = 0
@@ -209,7 +219,7 @@ def train_agent_with_evaluation(
         agent: Trained agent.
         eval_stats_history: List of evaluation episode stats dict.
     """
-
+    np.set_printoptions(threshold=sys.maxsize)
     logger = logger or logging.getLogger(__name__)
 
     for hook in evaluation_hooks:
