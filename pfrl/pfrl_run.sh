@@ -2,7 +2,7 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=32G
+#SBATCH --mem=10G
 #SBATCH --time=3-0
 #SBATCH --array=1-50
 
