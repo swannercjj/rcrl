@@ -12,10 +12,12 @@ import tyro
 class Args:
     entity_name: str = "rcrl"
     """Wandb workspace name."""
-    project_name: str = "HyperParamSearchLr"
+    project_name: str = "Pfrl Replicate Pong"
     """Project to pull from."""
-    hyperparam: str = "learning_rate"
-    """Hyperparameter that was swept."""
+    env: str = "Pong"
+    """Environment."""
+    # hyperparam: str = "learning_rate"
+    # """Hyperparameter that was swept."""
     data_dir: str = "./data/"
     """The location to store cached wandb data and downloaded data."""
 
@@ -50,24 +52,27 @@ def cache_runs(project_name, entity_name, data_dir):
         executor.map(process_run, (enumerate(runs)))
 
 
-def extract_data(project_name, entity_name, data_dir, hyperparam):
-    df = pd.DataFrame(columns=['env_id', 'seed', hyperparam, 'mean_episodic_return'])
+def extract_data(project_name, entity_name, data_dir, env):
+    env_id = "ALE/" + env + "-v5"
+    df = pd.DataFrame(columns=['env', 'seed', 'mean_episodic_return'])
     api = wandb.Api(timeout=20)
     runs = api.runs(f"{entity_name}/{project_name}")
     for run in runs:
         cache_path = os.path.join(data_dir, f"wandb_cache/{run.id}.pkl")
         if run.state != "finished":
+            os.remove(cache_path)
             continue
         
         seed_value = run.config.get('seed')  
     
         # only wants seeds from 1-5    
-        if seed_value is None or seed_value not in range(1, 6):
-            continue
+        # if seed_value is None or seed_value not in range(1, 6):
+        #     continue
 
         config = {k:v.get('value') for k, v in json.loads(run.json_config).items()}
     
-        if config.get(hyperparam) is None:
+        if config.get('env') is None or config.get('env') != env_id:
+            os.remove(cache_path)
             continue
     
         if os.path.exists(cache_path):
@@ -80,14 +85,14 @@ def extract_data(project_name, entity_name, data_dir, hyperparam):
 
         # Average of the whole lifetime
         dic = dict(data[~data['charts/episodic_return'].isnull()].mean())
-        df.loc[len(df)] = [config.get('env_id'), config.get('seed'), config.get(hyperparam), dic.get('charts/episodic_return')]
+        df.loc[len(df)] = [config.get('env'), config.get('seed'), dic.get('charts/episodic_return')]
 
         print(f"Data saved for run {run.id}")
-        # os.remove(cache_path)
+        os.remove(cache_path)
 
-    file_path = os.path.join(data_dir, f"{hyperparam}.csv")
+    file_path = os.path.join(data_dir, f"{str.lower(env)}.csv")
     df.to_csv(file_path)
-    # os.rmdir(os.path.join(data_dir, f"wandb_cache/"))
+    os.rmdir(os.path.join(data_dir, f"wandb_cache/"))
 
 
 if __name__=="__main__":
@@ -99,4 +104,4 @@ if __name__=="__main__":
         os.makedirs(args.data_dir)
 
     cache_runs(args.project_name, args.entity_name, args.data_dir)
-    extract_data(args.project_name, args.entity_name, args.data_dir, args.hyperparam)
+    extract_data(args.project_name, args.entity_name, args.data_dir, args.env)
