@@ -165,7 +165,6 @@ def main():
         env.seed(int(env_seed))
         if test:
             # Randomize actions like epsilon-greedy in evaluation as well
-            #env = pfrl.wrappers.RandomizeAction(env, 0.05)
             env = pfrl.wrappers.RandomizeAction(env, 0.05)
         if args.monitor:
             env = pfrl.wrappers.Monitor(
@@ -189,10 +188,10 @@ def main():
 
     opt = pfrl.optimizers.RMSpropEpsInsideSqrt(
         q_func.parameters(),
-        lr=2.5e-4,
-        alpha=0.95,
-        momentum=0.0,
-        eps=1e-2,
+        lr=2.5e-4,  # step size
+        alpha=0.95, # smoothing constant
+        momentum=0.95,  # default 0.0
+        eps=1e-2,   # min squared gradient
         centered=True,
     )
 
@@ -200,7 +199,7 @@ def main():
 
     explorer = explorers.LinearDecayEpsilonGreedy(
         start_epsilon=1.0,
-        end_epsilon=0.1,
+        end_epsilon=0.01,   # default 0.1
         decay_steps=10**6,
         random_action_func=lambda: np.random.randint(n_actions),
     )

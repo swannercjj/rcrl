@@ -290,7 +290,7 @@ def make_atari_sticky(env_id, max_frames=30 * 60 * 60):
     # use this instead of the make_atari function below. Specifically for v5
     env = gym.make(env_id,
                          full_action_space=True,
-                         frameskip=1,
+                         frameskip=5,
                          max_num_frames_per_episode=max_frames)
     assert "ALE/" in env.spec.id
     assert "-v5" in env.spec.id
