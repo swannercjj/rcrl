@@ -72,11 +72,12 @@ def extract_data(project_name, entity_name, data_dir):
             run_data = run.history()
             run_data.to_pickle(cache_path)
     
-        #data = run_data[['charts/episodic_return']] # check if this should be charts/episodic return or eval/mean
-        data = run_data[['eval/mean']]
+        data = run_data[['charts/episodic_return']] # check if this should be charts/episodic return or eval/mean
+        #data = run_data[['eval/mean']]
         # Average of the whole lifetime
-        dic = dict(data[~data['eval/mean'].isnull()].mean())
-        df.loc[len(df)] = [config.get('env'), config.get('seed'), dic.get('eval/mean')]
+        dic = dict(data[~data['charts/episodic_return'].isnull()][-100:].mean())
+        input(data[~data['charts/episodic_return'].isnull()][-100:])
+        df.loc[len(df)] = [config.get('env'), config.get('seed'), dic.get('charts/episodic_return')]
 
         print(f"Data saved for run {run.id}")
         # os.remove(cache_path)
