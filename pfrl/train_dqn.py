@@ -122,13 +122,6 @@ def main():
     if args.track:
         import wandb
         run_name = f"{args.env}__{args.exp_name}__{args.seed}__{int(time.time())}"
-        # class WandbLoggingHandler(logging.Handler):
-        #     def emit(self, record):
-        #         try:
-        #             if "R" in record.msg:
-        #                 wandb.log({"episodic_return": record.args[3]}, step=record.args[1])
-        #         except Exception:
-        #             self.handleError(record)
 
         wandb.init(
             project=args.wandb_project_name,
@@ -139,9 +132,6 @@ def main():
             monitor_gym=True,
             save_code=True,
         )
-        # logger = logging.getLogger(__name__)
-        # logger.setLevel(logging.INFO)
-        # logger.addHandler(WandbLoggingHandler())
 
     # Set a random seed used in PFRL.
     utils.set_random_seed(args.seed)
