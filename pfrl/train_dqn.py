@@ -181,7 +181,7 @@ def main():
         q_func.parameters(),
         lr=2.5e-4,  # step size
         alpha=0.95, # smoothing constant
-        momentum=0.95,  # default 0.0
+        momentum=0.0,  # default 0.0
         eps=1e-2,   # min squared gradient
         centered=True,
     )
