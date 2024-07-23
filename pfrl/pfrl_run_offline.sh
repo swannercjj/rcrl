@@ -57,7 +57,7 @@ else
 fi
 
 results_name="results_$run_timestamp.tar.gz"
-tar -czf results.tar.gz results
+tar -czf $results_name results
 mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/results'
 cp -r $results_name '/home/gwynetha/scratch/rcrl/pfrl/results'
 
