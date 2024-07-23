@@ -15,7 +15,7 @@ fi
 module load python/3.11 StdEnv/2023 gcc opencv/4.8.1 swig 
 
 echo "Copying virtualenv..."
-cp ~/projects/def-mbowling/jiajing8/pfrlenv.tar.gz $SLURM_TMPDIR/
+cp ~/projects/def-mbowling/gwynetha/pfrlenv.tar.gz $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
 tar -xzf pfrlenv.tar.gz
 ls -l
@@ -28,14 +28,14 @@ export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
 WANDB_MODE=offline PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dqn.py \
     --env "ALE/Pong-v5" \
-    --seed $SLURM_ARRAY_TASK_ID \
+    --seed 69 \
     --track \
     --wandb_project_name 'PFRL_offline_test' \
-    --sanity_mod 1_000 \
-    --steps 10_000 
+    --sanity_mod 10 \
+    --steps 100
 
 tar -czf results.tar.gz results
-cp -r results.tar.gz '/home/jiajing8/scratch/rcrl/pfrl/results'
+cp -r results.tar.gz '/home/gwynetha/scratch/rcrl/pfrl/results'
 
 # Place wandb directory
 wandb_dir="/wandb"
