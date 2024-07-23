@@ -14,7 +14,8 @@ class Args:
     """The location to store cached wandb data and downloaded data."""
     data_name: str = "replicate_data_pfrl.csv"
     """The name of the data csv file"""
-    save_name: str = "replicate_results.csv"
+    save_name: str = "replicate_results_pfrl.csv"
+    """The name of the results csv file"""
 
 def get_CI_stats(data, num_runs):
     sample_mean = np.mean(data['mean_episodic_return'])
@@ -43,8 +44,9 @@ if __name__=="__main__":
     new_df = pd.DataFrame(data, columns=['Game', 'Mean Episodic Return', "Num Runs"])
 
     print(new_df)
-    file_path = os.path.join(args.data_dir, args.data_name)  
+    file_path = os.path.join(args.data_dir, args.save_name)  
     new_df.to_csv(file_path)
+    print(args.data_name,'saved in', file_path)
 
 '''
 - hypers double check
