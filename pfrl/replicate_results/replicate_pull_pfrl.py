@@ -16,6 +16,8 @@ class Args:
     """Project to pull from."""
     data_dir: str = "./data/"
     """The location to store cached wandb data and downloaded data."""
+    data_name: str = "replicate_data_pfrl.csv"
+    """The name of the data csv file to save"""
 
 
 def cache_runs(project_name, entity_name, data_dir):
@@ -76,13 +78,13 @@ def extract_data(project_name, entity_name, data_dir):
         #data = run_data[['eval/mean']]
         # Average of the whole lifetime
         dic = dict(data[~data['charts/episodic_return'].isnull()][-100:].mean())
-        input(data[~data['charts/episodic_return'].isnull()][-100:])
+        #input(data[~data['charts/episodic_return'].isnull()][-100:])
         df.loc[len(df)] = [config.get('env'), config.get('seed'), dic.get('charts/episodic_return')]
 
         print(f"Data saved for run {run.id}")
         # os.remove(cache_path)
 
-    file_path = os.path.join(data_dir, f"replicate_data_pfrl.csv")
+    file_path = os.path.join(data_dir, args.data_name)
     df.to_csv(file_path)
     # os.rmdir(os.path.join(data_dir, f"wandb_cache/"))
 
