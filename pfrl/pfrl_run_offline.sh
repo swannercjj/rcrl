@@ -3,8 +3,8 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=10G
-#SBATCH --time=02:59:00
-#SBATCH --array=1-1
+#SBATCH --time=1-0
+#SBATCH --array=1-50
 
 if [ "$SLURM_TMPDIR" != "" ]; then
     echo "Setting up SOCKS5 proxy..."
@@ -28,11 +28,11 @@ export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
 WANDB_MODE=offline PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dqn.py \
     --env "ALE/Pong-v5" \
-    --seed 69 \
+    --seed $SLURM_ARRAY_TASK_ID \
     --track \
-    --wandb_project_name 'PFRL_offline_test' \
-    --sanity_mod 10 \
-    --steps 100
+    --wandb_project_name 'PFRL_offline_0m' \
+    --sanity_mod 1_000_000 \
+    --steps 10_000_000
 
 # Place wandb directory
 wandb_dir="$(pwd)/wandb"
@@ -56,12 +56,12 @@ else
     echo "WandB directory ($wandb_dir) not found."
 fi
 
-results_name="results_$run_timestamp.tar.gz"
+results_name="results_0m_$run_timestamp.tar.gz"
 tar -czf $results_name results
 mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/results'
 cp -r $results_name '/home/gwynetha/scratch/rcrl/pfrl/results'
 
-wandb_name="wandb_$run_timestamp.tar.gz" 
+wandb_name="wandb_0m_$run_timestamp.tar.gz" 
 tar -czf $wandb_name wandb
 mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/wandb'
 cp -r $wandb_name '/home/gwynetha/scratch/rcrl/pfrl/wandb'
