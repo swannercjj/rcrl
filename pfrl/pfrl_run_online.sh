@@ -26,6 +26,7 @@ git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
 
 export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
+wandb online
 PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dqn.py \
     --env "ALE/Pong-v5" \
     --seed $SLURM_ARRAY_TASK_ID \

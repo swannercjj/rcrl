@@ -3,8 +3,8 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --gpus-per-node=1
 #SBATCH --mem=10G
-#SBATCH --time=02:59:00
-#SBATCH --array=1-1
+#SBATCH --time=1-0
+#SBATCH --array=1-50
 
 if [ "$SLURM_TMPDIR" != "" ]; then
     echo "Setting up SOCKS5 proxy..."
@@ -15,7 +15,7 @@ fi
 module load python/3.11 StdEnv/2023 gcc opencv/4.8.1 swig 
 
 echo "Copying virtualenv..."
-cp ~/projects/def-mbowling/jiajing8/pfrlenv.tar.gz $SLURM_TMPDIR/
+cp ~/projects/def-mbowling/gwynetha/pfrlenv.tar.gz $SLURM_TMPDIR/
 cd $SLURM_TMPDIR
 tar -xzf pfrlenv.tar.gz
 ls -l
@@ -30,27 +30,23 @@ WANDB_MODE=offline PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv pr
     --env "ALE/Pong-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
-    --wandb_project_name 'PFRL_offline_test' \
-    --sanity_mod 1_000 \
-    --steps 10_000 
-
-tar -czf results.tar.gz results
-cp -r results.tar.gz '/home/jiajing8/scratch/rcrl/pfrl/results'
+    --wandb_project_name 'PFRL_offline_0m' \
+    --sanity_mod 1_000_000 \
+    --steps 10_000_000
 
 # Place wandb directory
-wandb_dir="/wandb"
+wandb_dir="$(pwd)/wandb"
 
 # Check if wandb directory exists
 if [ -d "$wandb_dir" ]; then
-    echo "wandb found"
     # Navigate to the latest run directory (assuming it's the most recent)
-    latest_run_dir=$(ls -td "$wandb_dir/run-"* 2>/dev/null | head -n 1)
+    latest_run_dir=$(ls -td "$wandb_dir/offline-run-"* 2>/dev/null | head -n 1)
     
     if [ -n "$latest_run_dir" ]; then
         # Extract the timestamp part (YYMMDD_HHMMSS) from the directory name
         run_id=$(basename "$latest_run_dir")
-        run_timestamp=${run_id#run-}  # Removes 'run-' prefix
-        run_timestamp=${run_timestamp%%-*}  # Keeps only YYMMDD_HHMMSS part
+        run_timestamp=${run_id#offline-run-}  # Removes 'offline-run-' prefix
+        run_timestamp=${run_timestamp%%-*}    # Keeps only YYMMDD_HHMMSS part
         
         echo "Run Timestamp: $run_timestamp"
     else
@@ -60,7 +56,13 @@ else
     echo "WandB directory ($wandb_dir) not found."
 fi
 
-wandb_name="wandb_$run_timestamp.tar.gz"
+results_name="results_0m_$run_timestamp.tar.gz"
+tar -czf $results_name results
+mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/results'
+cp -r $results_name '/home/gwynetha/scratch/rcrl/pfrl/results'
+
+wandb_name="wandb_0m_$run_timestamp.tar.gz" 
 tar -czf $wandb_name wandb
-cp -r $wandb_name '/home/jiajing8/scratch/rcrl/pfrl/wandb'
+mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/wandb'
+cp -r $wandb_name '/home/gwynetha/scratch/rcrl/pfrl/wandb'
 
