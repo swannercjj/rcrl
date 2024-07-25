@@ -131,7 +131,7 @@ def main():
             name=run_name,
             monitor_gym=True,
             save_code=True,
-            mode="offline"
+            mode="online"
         )
 
     # Set a random seed used in PFRL.
