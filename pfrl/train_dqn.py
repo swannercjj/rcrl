@@ -13,11 +13,7 @@ from pfrl import replay_buffers, utils
 from pfrl.initializers import init_chainer_default
 from pfrl.q_functions import DiscreteActionValueHead
 import atari_wrappers
-#import randomize_action
 import train_agent
-#from pfrl.wrappers import atari_wrappers
-
-
 
 def main():
     parser = argparse.ArgumentParser()
@@ -46,7 +42,7 @@ def main():
         help="Entity (team) of wandb's project."
     )
     parser.add_argument("--wandb_mode", type=str, default="online", help="Mode for wandb logging.")
-    
+
     parser.add_argument(
         "--env",
         type=str,
@@ -98,15 +94,31 @@ def main():
         default=5 * 10**7,
         help="Total number of timesteps to train the agent.",
     )
+
+    parser.add_argument("--eval-n-steps", type=int, default=125000)
+    parser.add_argument("--eval-interval", type=int, default=250000)
+    parser.add_argument("--n-best-episodes", type=int, default=30)
+
+    # optimizer
+    parser.add_argument("--opt-lr", type=float, default=2.5e-4)
+    parser.add_argument("--opt-alpha", type=float, default=0.95)
+    parser.add_argument("--opt-momentum", type=float, default=0.0)
+    parser.add_argument("--opt-eps", type=float, default=1e-2)
+
+    # replay buffer
+    parser.add_argument("--rb-start-epsilon", type=float, default=1.0)
+    parser.add_argument("--rb-end-epsilon", type=float, default=0.01)
+    parser.add_argument("--rb-decay-steps", type=float, default=10**6)
+
+    # agent
+    parser.add_argument("--agt-target-update-interval", type=int, default=10**4)
+    parser.add_argument("--agt-update-interval", type=int, default=4)
     parser.add_argument(
         "--replay-start-size",
         type=int,
         default=5 * 10**4,
         help="Minimum replay buffer size before " + "performing gradient updates.",
     )
-    parser.add_argument("--eval-n-steps", type=int, default=125000)
-    parser.add_argument("--eval-interval", type=int, default=250000)
-    parser.add_argument("--n-best-episodes", type=int, default=30)
 
     # added for logging
     parser.add_argument("--sanity_mod", type=int, default=None)
@@ -177,19 +189,19 @@ def main():
 
     opt = pfrl.optimizers.RMSpropEpsInsideSqrt(
         q_func.parameters(),
-        lr=2.5e-4,  # step size
-        alpha=0.95, # smoothing constant
-        momentum=0.0,  # default 0.0
-        eps=1e-2,   # min squared gradient
+        lr=args.opt_lr,  # step size
+        alpha=args.opt_alpha, # smoothing constant
+        momentum=args.opt_momentum,  # default 0.0
+        eps=args.opt_eps,   # min squared gradient
         centered=True,
     )
 
     rbuf = replay_buffers.ReplayBuffer(10**6)
 
     explorer = explorers.LinearDecayEpsilonGreedy(
-        start_epsilon=1.0,
-        end_epsilon=0.01,   # default 0.1
-        decay_steps=10**6,
+        start_epsilon=args.rb_start_epsilon,
+        end_epsilon=args.rb_end_epsilon,   # default 0.1
+        decay_steps=args.rb_decay_steps,
         random_action_func=lambda: np.random.randint(n_actions),
     )
 
@@ -206,9 +218,9 @@ def main():
         gamma=0.99,
         explorer=explorer,
         replay_start_size=args.replay_start_size,
-        target_update_interval=10**4,
+        target_update_interval=args.agt_target_update_interval,
         clip_delta=True,
-        update_interval=4,
+        update_interval=args.agt_update_interval,
         batch_accumulator="sum",
         phi=phi,
     )
