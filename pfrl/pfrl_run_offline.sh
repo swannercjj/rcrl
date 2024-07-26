@@ -41,30 +41,30 @@ tar -czf $results_name results
 mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/results'
 cp -r $results_name '/home/gwynetha/scratch/rcrl/pfrl/results'
 
-# Place wandb directory
-wandb_dir="$(pwd)/wandb"
+# # Place wandb directory
+# wandb_dir="$(pwd)/wandb"
 
-# Check if wandb directory exists
-if [ -d "$wandb_dir" ]; then
-    # Navigate to the latest run directory (assuming it's the most recent)
-    latest_run_dir=$(ls -td "$wandb_dir/offline-run-"* 2>/dev/null | head -n 1)
+# # Check if wandb directory exists
+# if [ -d "$wandb_dir" ]; then
+#     # Navigate to the latest run directory (assuming it's the most recent)
+#     latest_run_dir=$(ls -td "$wandb_dir/offline-run-"* 2>/dev/null | head -n 1)
     
-    if [ -n "$latest_run_dir" ]; then
-        # Extract the timestamp part (YYMMDD_HHMMSS) from the directory name
-        run_id=$(basename "$latest_run_dir")
-        run_timestamp=${run_id#offline-run-}  # Removes 'offline-run-' prefix
-        run_timestamp=${run_timestamp%%-*}    # Keeps only YYMMDD_HHMMSS part
+#     if [ -n "$latest_run_dir" ]; then
+#         # Extract the timestamp part (YYMMDD_HHMMSS) from the directory name
+#         run_id=$(basename "$latest_run_dir")
+#         run_timestamp=${run_id#offline-run-}  # Removes 'offline-run-' prefix
+#         run_timestamp=${run_timestamp%%-*}    # Keeps only YYMMDD_HHMMSS part
         
-        echo "Run Timestamp: $run_timestamp"
+#         echo "Run Timestamp: $run_timestamp"
 
-        wandb_name="wandb_0m_$run_timestamp.tar.gz" 
-        tar -czf $wandb_name wandb
-        mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/wandb'
-        cp -r $wandb_name '/home/gwynetha/scratch/rcrl/pfrl/wandb'
+#         wandb_name="wandb_0m_$run_timestamp.tar.gz" 
+#         tar -czf $wandb_name wandb
+#         mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/wandb'
+#         cp -r $wandb_name '/home/gwynetha/scratch/rcrl/pfrl/wandb'
 
-    else
-        echo "No run directories found in $wandb_dir"
-    fi
-else
-    echo "WandB directory ($wandb_dir) not found."
-fi
+#     else
+#         echo "No run directories found in $wandb_dir"
+#     fi
+# else
+#     echo "WandB directory ($wandb_dir) not found."
+# fi
