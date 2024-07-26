@@ -27,27 +27,26 @@ def main():
         default=os.path.basename(__file__)[: -len(".py")],
         help="Experiment name."
     )
-
     parser.add_argument(
         "--track",
         action="store_true",
         default=False,
         help="Log results to wandb."
     )
-
     parser.add_argument(
         "--wandb_project_name",
         type=str,
         default="pfrl_test",
         help="Wandb project's name."
     )
-
     parser.add_argument(
         "--wandb_entity",
         type=str,
         default="rcrl",
         help="Entity (team) of wandb's project."
     )
+    parser.add_argument("--wandb_mode", type=str, default="online", help="Mode for wandb logging.")
+    
     parser.add_argument(
         "--env",
         type=str,
@@ -130,7 +129,7 @@ def main():
             name=run_name,
             monitor_gym=True,
             save_code=True,
-            mode="online"
+            mode=args.wandb_mode
         )
 
     # Set a random seed used in PFRL.

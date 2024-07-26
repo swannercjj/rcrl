@@ -80,6 +80,8 @@ def train_agent(
             action = agent.act(obs)
             # o_{t+1}, r_{t+1}
             obs, r, terminated, truncated, info = env.step(action)
+
+            # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"+1_"+"after_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
