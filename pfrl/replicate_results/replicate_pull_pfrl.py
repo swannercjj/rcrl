@@ -58,15 +58,8 @@ def extract_data(project_name, entity_name, data_dir):
         cache_path = os.path.join(data_dir, f"wandb_cache/{run.id}.pkl")
         if run.state != "finished":
             continue
-    
-    
-        # # only wants seeds from 1-5    
-        # seed_value = run.config.get('seed')  
-        # if seed_value is None or seed_value not in range(1, 6):
-        #     continue
 
         config = {k:v.get('value') for k, v in json.loads(run.json_config).items()}
-    
     
         if os.path.exists(cache_path):
             run_data = pd.read_pickle(cache_path)
@@ -74,19 +67,16 @@ def extract_data(project_name, entity_name, data_dir):
             run_data = run.history()
             run_data.to_pickle(cache_path)
     
-        data = run_data[['charts/episodic_return']] # check if this should be charts/episodic return or eval/mean
-        #data = run_data[['eval/mean']]
+        data = run_data[['charts/episodic_return']]
+
         # Average of the whole lifetime
         dic = dict(data[~data['charts/episodic_return'].isnull()][-100:].mean())
-        #input(data[~data['charts/episodic_return'].isnull()][-100:])
         df.loc[len(df)] = [config.get('env'), config.get('seed'), dic.get('charts/episodic_return')]
 
         print(f"Data saved for run {run.id}")
-        # os.remove(cache_path)
 
     file_path = os.path.join(data_dir, args.data_name)
     df.to_csv(file_path)
-    # os.rmdir(os.path.join(data_dir, f"wandb_cache/"))
 
 
 if __name__=="__main__":

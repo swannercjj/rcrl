@@ -1,8 +1,0 @@
-gymnasium==0.29.1
-numpy==1.26.4
-dataclasses==0.6
-torch==2.1.2
-stable-baselines3==2.3.2
-tensorboard==2.16.2
-tyro==0.7.3
-wandb==0.13.11

@@ -17,13 +17,13 @@ class Args:
     save_name: str = "replicate_results_pfrl.csv"
     """The name of the results csv file"""
 
+
 def get_CI_stats(data, num_runs):
     sample_mean = np.mean(data['mean_episodic_return'])
     sample_std = np.std(data['mean_episodic_return'])
     z_statistic_std_error = 1.96 * sample_std/np.sqrt(num_runs)
     upper, lower = sample_mean + z_statistic_std_error, sample_mean - z_statistic_std_error
     return sample_mean, sample_std, z_statistic_std_error, upper, lower
-
 
 
 def log_info(df):

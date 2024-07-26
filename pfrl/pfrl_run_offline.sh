@@ -34,6 +34,13 @@ WANDB_MODE=offline PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv pr
     --sanity_mod 1_000_000 \
     --steps 10_000_000
 
+wandb sync --sync-all
+
+results_name="results_0m_$run_timestamp.tar.gz"
+tar -czf $results_name results
+mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/results'
+cp -r $results_name '/home/gwynetha/scratch/rcrl/pfrl/results'
+
 # Place wandb directory
 wandb_dir="$(pwd)/wandb"
 
@@ -49,20 +56,15 @@ if [ -d "$wandb_dir" ]; then
         run_timestamp=${run_timestamp%%-*}    # Keeps only YYMMDD_HHMMSS part
         
         echo "Run Timestamp: $run_timestamp"
+
+        wandb_name="wandb_0m_$run_timestamp.tar.gz" 
+        tar -czf $wandb_name wandb
+        mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/wandb'
+        cp -r $wandb_name '/home/gwynetha/scratch/rcrl/pfrl/wandb'
+
     else
         echo "No run directories found in $wandb_dir"
     fi
 else
     echo "WandB directory ($wandb_dir) not found."
 fi
-
-results_name="results_0m_$run_timestamp.tar.gz"
-tar -czf $results_name results
-mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/results'
-cp -r $results_name '/home/gwynetha/scratch/rcrl/pfrl/results'
-
-wandb_name="wandb_0m_$run_timestamp.tar.gz" 
-tar -czf $wandb_name wandb
-mkdir -p '/home/gwynetha/scratch/rcrl/pfrl/wandb'
-cp -r $wandb_name '/home/gwynetha/scratch/rcrl/pfrl/wandb'
-

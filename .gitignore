@@ -159,7 +159,6 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-pull_results
 runs
 wandb
 control_runs
@@ -167,6 +166,4 @@ control_runs
 .jpg
 wandb_cache
 slurm-*
-atari_replicate_results/data/replicate.csv
-atari_replicate_results/data/replicate_data.csv
 results
