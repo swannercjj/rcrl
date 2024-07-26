@@ -166,7 +166,7 @@ control_runs
 .jpeg
 .jpg
 wandb_cache
-#slurm-*
+slurm-*
 atari_replicate_results/data/replicate.csv
 atari_replicate_results/data/replicate_data.csv
 results
