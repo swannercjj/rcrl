@@ -116,7 +116,6 @@ def main():
     import logging
 
     logging.basicConfig(level=args.log_level)
-    # logger = None
 
     # wandb logging
     if args.track:
@@ -251,7 +250,7 @@ def main():
             save_best_so_far_agent=True,
             eval_env=eval_env,
             use_tensorboard=True,
-            sanity_mod=args.sanity_mod, ### for image observations checks
+            sanity_mod=args.sanity_mod, # for image observations checks
         )
 
         dir_of_best_network = os.path.join(args.outdir, "best")

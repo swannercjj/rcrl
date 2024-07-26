@@ -27,16 +27,14 @@ def ask_and_save_agent_replay_buffer(agent, t, outdir, suffix=""):
 def image_obs(obs, im_obs, name=str): # for logging images on wandb
     '''obs is an array of the observation'''
     im = Image.fromarray(obs)
-    # print(obs)
-    #input('wait')
     im.save(str(name)+".jpeg")
     f = open(str(name)+".txt", "a")
     f.write(str(obs))
     f.close()
+    
     # create wandb image, put in list of images
     im_wandb = wandb.Image(im, caption=name)
     im_obs.append(im_wandb)
-    #wandb.log({name: im_wandb})
 
 def train_agent(
     agent,
@@ -76,8 +74,6 @@ def train_agent(
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
-                # print(obs_numpy[0].shape)
-                #input(type(obs_numpy))
                 before = obs_numpy[0]
                 image_obs(before, im_obs, name)
             # a_t
