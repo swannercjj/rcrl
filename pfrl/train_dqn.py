@@ -106,9 +106,9 @@ def main():
     parser.add_argument("--opt-eps", type=float, default=1e-2)
 
     # replay buffer
-    parser.add_argument("--rb-start-epsilon", type=float, default=1.0)
-    parser.add_argument("--rb-end-epsilon", type=float, default=0.01)
-    parser.add_argument("--rb-decay-steps", type=float, default=10**6)
+    parser.add_argument("--start-epsilon", type=float, default=1.0)
+    parser.add_argument("--end-epsilon", type=float, default=0.01)
+    parser.add_argument("--decay-steps", type=float, default=10**6)
 
     # agent
     parser.add_argument("--agt-target-update-interval", type=int, default=10**4)
@@ -200,9 +200,9 @@ def main():
     rbuf = replay_buffers.ReplayBuffer(10**6)
 
     explorer = explorers.LinearDecayEpsilonGreedy(
-        start_epsilon=args.rb_start_epsilon,
-        end_epsilon=args.rb_end_epsilon,   # default 0.1
-        decay_steps=args.rb_decay_steps,
+        start_epsilon=args.start_epsilon,
+        end_epsilon=args.end_epsilon,   # default 0.1
+        decay_steps=args.decay_steps,
         random_action_func=lambda: np.random.randint(n_actions),
     )
 
