@@ -161,7 +161,7 @@ def main():
         # Use different random seeds for train and test envs
         env_seed = test_seed if test else train_seed
         env = atari_wrappers.wrap_deepmind(
-            atari_wrappers.make_atari_sticky(args.env, max_frames=None, action_repeat=args.frame_skip), # originally used to be make_atari
+            atari_wrappers.make_atari_sticky(args.env, max_frames=None, frame_skip=args.frame_skip), # originally used to be make_atari
             episode_life=not test,
             clip_rewards=not test,
         )
