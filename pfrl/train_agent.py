@@ -51,6 +51,7 @@ def train_agent(
     use_tensorboard=False,
     logger=None,
     sanity_mod=None, ### for image observations checks
+    action_repeat_n=1
 ):
     begin = int(time.time())
     logger = logger or logging.getLogger(__name__)
@@ -68,6 +69,9 @@ def train_agent(
 
     eval_stats_history = []  # List of evaluation episode stats dict
     episode_len = 0
+    #repeat = True ######
+    #rep_count = 1
+    rep_r = 0
     try:
         action = 0
         while t < steps:
@@ -76,24 +80,40 @@ def train_agent(
                 obs_numpy = np.asarray(obs)
                 before = obs_numpy[0]
                 image_obs(before, im_obs, name)
-            # a_t
-            action = agent.act(obs)
-            # o_{t+1}, r_{t+1}
-            obs, r, terminated, truncated, info = env.step(action)
+            
+            # # for constant action repeat and discount
+            # if repeat: 
+            #     rep_count += 1
+            #     if rep_count>=action_repeat_n:
+            #         repeat = False
+            #         rep_count = 1 
+            # else:
+            #     # a_t
+            #     action = agent.act(obs)
+            #     repeat = True
 
+            action = agent.act(obs)
+            for rep in range(action_repeat_n):
+                # o_{t+1}, r_{t+1}
+                #print("Repeat:", rep, "action:", action)
+                obs, r, terminated, truncated, info = env.step(action)
+                rep_r += r
+                t += 1
+                episode_len += 1
+            # my_str = "I repeated "+str(rep)+" times. For action: "+ str(action)
+            # input(my_str)
+            episode_r += rep_r
+            
+            reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated # careful of max_episode_len if it is type int
+            agent.observe(obs, rep_r, terminated, reset) # transition: {O_t, A_t, sum reward until t+action_repeat, O_(t+action_repeat)} into the buffer?
+
+            rep_r = 0 # after repeating, set back to 0
             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"+1_"+"after_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
                 after = obs_numpy[0]
                 image_obs(after, im_obs, name)
-
-
-            t += 1
-            episode_r += r
-            episode_len += 1
-            reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
-            agent.observe(obs, r, terminated, reset)
 
             for hook in step_hooks:
                 hook(env, agent, t)
@@ -170,6 +190,7 @@ def train_agent_with_evaluation(
     eval_during_episode=False,
     logger=None,
     sanity_mod=None, ### for image observations checks
+    action_repeat_n = 1,
 
 ):
     """Train an agent while periodically evaluating it.
@@ -257,7 +278,8 @@ def train_agent_with_evaluation(
         eval_during_episode=eval_during_episode,
         use_tensorboard=use_tensorboard,
         logger=logger,
-        sanity_mod=sanity_mod
+        sanity_mod=sanity_mod,
+        action_repeat_n = action_repeat_n
     )
 
     return agent, eval_stats_history
