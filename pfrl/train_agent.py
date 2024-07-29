@@ -72,6 +72,7 @@ def train_agent(
     #repeat = True ######
     #rep_count = 1
     rep_r = 0
+    print("CONSTANT REPEATS!")
     try:
         action = 0
         while t < steps:
