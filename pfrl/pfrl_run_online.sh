@@ -33,6 +33,7 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --track \
     --wandb_project_name 'Pfrl_Learn_AR_Pong' \
     --sanity_mod 1_000_000 \
-    --steps 10_000_000
+    --steps 10_000_000 \
+    --repeat-options 1 4
 
 cp -r results '/home/jiajing8/scratch/rcrl/pfrl/results'
