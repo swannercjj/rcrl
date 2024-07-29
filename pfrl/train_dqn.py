@@ -15,6 +15,7 @@ from pfrl.q_functions import DiscreteActionValueHead
 import atari_wrappers
 import train_agent
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -119,10 +120,10 @@ def main():
         default=5 * 10**4,
         help="Minimum replay buffer size before " + "performing gradient updates.",
     )
-    parser.add_argument("--action_repeat", type=int, default=5)
+    parser.add_argument("--frame-skip", type=int, default=5)
 
     # added for logging
-    parser.add_argument("--sanity_mod", type=int, default=None)
+    parser.add_argument("--sanity-mod", type=int, default=None)
     args = parser.parse_args()
 
     import logging
@@ -160,7 +161,7 @@ def main():
         # Use different random seeds for train and test envs
         env_seed = test_seed if test else train_seed
         env = atari_wrappers.wrap_deepmind(
-            atari_wrappers.make_atari_sticky(args.env, max_frames=None, action_repeat=args.action_repeat), # originally used to be make_atari
+            atari_wrappers.make_atari_sticky(args.env, max_frames=None, action_repeat=args.frame_skip), # originally used to be make_atari
             episode_life=not test,
             clip_rewards=not test,
         )
