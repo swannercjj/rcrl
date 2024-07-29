@@ -124,6 +124,10 @@ def main():
 
     # added for logging
     parser.add_argument("--sanity-mod", type=int, default=None)
+
+    # action repeats
+    parser.add_argument("--repeat-options", nargs="+", type=int, default="1")
+
     args = parser.parse_args()
 
     import logging
@@ -180,7 +184,7 @@ def main():
     env = make_env(test=False)
     eval_env = make_env(test=True)
 
-    n_actions = env.action_space.n
+    n_actions = env.action_space.n * len(args.repeat_options)
     q_func = nn.Sequential(     
         pnn.LargeAtariCNN(),
         init_chainer_default(nn.Linear(512, n_actions)),
@@ -226,6 +230,9 @@ def main():
         batch_accumulator="sum",
         phi=phi,
     )
+    # agent add action repeats
+    agent.action_repeats = args.repeat_options
+    agent.repeat_frequency = np.array(len(args.repeat_options))
 
     if args.load or args.load_pretrained:
         # either load or load_pretrained must be false
