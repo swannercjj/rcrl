@@ -87,12 +87,14 @@ def train_agent(
                 for _ in range(repeat):
                     obs, r, terminated, truncated, info = env.step(action)
                     step_r += r
+                    episode_len += 1
                     if terminated or info.get("needs_reset", False) or truncated:
                         break
                 if use_tensorboard:
                     evaluator.tb_writer.add_scalar("actions/num_repeats", repeat, t)
             else:
                 obs, step_r, terminated, truncated, info = env.step(action)
+                episode_len += 1
 
             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
@@ -104,7 +106,7 @@ def train_agent(
 
             t += 1
             episode_r += step_r
-            episode_len += 1
+            # episode_len += 1
             reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
             agent.observe(obs, step_r, terminated, reset)
 
