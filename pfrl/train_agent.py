@@ -69,8 +69,8 @@ def train_agent(
 
     eval_stats_history = []  # List of evaluation episode stats dict
     episode_len = 0
-    #repeat = True ######
-    #rep_count = 1
+    repeat = False ######
+    rep_count = 1
     rep_r = 0
     print("CONSTANT REPEATS!")
     try:
@@ -82,27 +82,32 @@ def train_agent(
                 before = obs_numpy[0]
                 image_obs(before, im_obs, name)
             
-            # # for constant action repeat and discount
-            # if repeat: 
-            #     rep_count += 1
-            #     if rep_count>=action_repeat_n:
-            #         repeat = False
-            #         rep_count = 1 
-            # else:
-            #     # a_t
-            #     action = agent.act(obs)
-            #     repeat = True
+            # for constant action repeat and discount
+            if repeat: 
+                print("Repeat:", rep_count, "action:", action)
+                rep_count += 1
+                if rep_count>action_repeat_n:
+                    repeat = False
+                    rep_count = 1 
+            else:
+                # a_t
+                action = agent.act(obs)
+                repeat = True
 
-            action = agent.act(obs)
-            for rep in range(action_repeat_n):
-                # o_{t+1}, r_{t+1}
-                #print("Repeat:", rep, "action:", action)
-                obs, r, terminated, truncated, info = env.step(action)
-                rep_r += r
-                t += 1
-                episode_len += 1
-            # my_str = "I repeated "+str(rep)+" times. For action: "+ str(action)
-            # input(my_str)
+            obs, rep_r, terminated, truncated, info = env.step(action)  
+            t +=1
+            episode_len+=1
+            # action = agent.act(obs)
+            # for rep in range(action_repeat_n):
+            #     # o_{t+1}, r_{t+1}
+            #     #print("Repeat:", rep, "action:", action)
+            #     obs, r, terminated, truncated, info = env.step(action)
+            #     rep_r += r
+            #     t += 1
+            #     episode_len += 1
+            # # my_str = "I repeated "+str(rep)+" times. For action: "+ str(action)
+            # # input(my_str)
+
             episode_r += rep_r
             
             reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated # careful of max_episode_len if it is type int
