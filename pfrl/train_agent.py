@@ -88,6 +88,7 @@ def train_agent(
                     obs, r, terminated, truncated, info = env.step(action)
                     step_r += r
                     episode_len += 1
+                    t += 1
                     if terminated or info.get("needs_reset", False) or truncated:
                         break
                 if use_tensorboard:
@@ -103,8 +104,6 @@ def train_agent(
                 after = obs_numpy[0]
                 image_obs(after, im_obs, name)
 
-
-            t += 1
             episode_r += step_r
             # episode_len += 1
             reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
