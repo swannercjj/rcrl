@@ -168,7 +168,7 @@ def main():
         env = atari_wrappers.wrap_deepmind(
             atari_wrappers.make_atari_sticky(args.env, max_frames=None, frame_skip=args.frame_skip), # originally used to be make_atari
             episode_life=not test,
-            clip_rewards=not test,
+            clip_rewards=False,
         )
         env.seed(int(env_seed))
         if test:

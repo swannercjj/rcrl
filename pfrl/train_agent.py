@@ -87,7 +87,10 @@ def train_agent(
                 step_r = 0
                 for _ in range(repeat):
                     obs, r, terminated, truncated, info = env.step(action)
-                    step_r += r
+                    step_r += np.sign(r)    # clipped
+
+                    episode_r += r  # unclipped
+                    
                     episode_len += 1
                     t += 1
                     if terminated or info.get("needs_reset", False) or truncated:
@@ -95,8 +98,9 @@ def train_agent(
                 if use_tensorboard:
                     evaluator.tb_writer.add_scalar("actions/num_repeats", repeat, t)
             else:
-                obs, step_r, terminated, truncated, info = env.step(action)
+                obs, r, terminated, truncated, info = env.step(action)
                 episode_len += 1
+                episode_r += r
 
             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
@@ -105,7 +109,7 @@ def train_agent(
                 after = obs_numpy[0]
                 image_obs(after, im_obs, name)
 
-            episode_r += step_r
+            # episode_r += step_r
             # episode_len += 1
             reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
             agent.observe(obs, step_r, terminated, reset)
