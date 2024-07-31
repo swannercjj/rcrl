@@ -180,7 +180,7 @@ def main():
         env.seed(int(env_seed))
         if test:
             # Randomize actions like epsilon-greedy in evaluation as well
-            env = pfrl.wrappers.RandomizeAction(env, 0.05)
+            env = pfrl.wrappers.RandomizeAction(env, 0.01) # marlos paper, default 0.05 
         if args.monitor:
             env = pfrl.wrappers.Monitor(
                 env, args.outdir, mode="evaluation" if test else "training"
@@ -294,7 +294,7 @@ def main():
             agent=agent,
             n_steps=None,
             n_episodes=args.n_best_episodes,
-            max_episode_len=4500,
+            max_episode_len=27000, #27_000,30 MINS IN EMULATOR # default 4500
             logger=None,
         )
         with open(os.path.join(args.outdir, "bestscores.json"), "w") as f:
