@@ -35,16 +35,16 @@ def _run_episodes(
             info = {}
         a = agent.act(obs)
         if hasattr(agent, "action_repeats") and len(agent.action_repeats) > 1:
-                repeat = agent.action_repeats[a % len(agent.action_repeats)]
-                action = a // len(agent.action_repeats)
-                step_r = 0
-                for _ in range(repeat):
-                    obs, r, terminated, truncated, info = env.step(action)
-                    step_r += r
-                    episode_len += 1
-                    timestep += 1
-                    if terminated or info.get("needs_reset", False) or truncated:
-                        break
+            repeat = agent.action_repeats[a % len(agent.action_repeats)]
+            action = a // len(agent.action_repeats)
+            step_r = 0
+            for _ in range(repeat):
+                obs, r, terminated, truncated, info = env.step(action)
+                step_r += r
+                episode_len += 1
+                timestep += 1
+                if terminated or info.get("needs_reset", False) or truncated:
+                    break
         else:
             obs, step_r, terminated, truncated, info = env.step(action)
             episode_len += 1

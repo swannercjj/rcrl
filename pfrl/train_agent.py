@@ -5,7 +5,8 @@ import time
 import numpy as np
 from PIL import Image 
 
-from pfrl.experiments.evaluator import Evaluator, save_agent
+from pfrl.experiments.evaluator import save_agent
+from evaluator import Evaluator
 from pfrl.utils.ask_yes_no import ask_yes_no
 
 
