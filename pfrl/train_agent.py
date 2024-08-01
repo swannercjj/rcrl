@@ -81,28 +81,15 @@ def train_agent(
                 obs_numpy = np.asarray(obs)
                 before = obs_numpy[0]
                 image_obs(before, im_obs, name)
-            
-            # # for constant action repeat and discount
-            # if repeat: 
-            #     rep_count += 1
-            #     if rep_count>=action_repeat_n:
-            #         repeat = False
-            #         rep_count = 1 
-            # else:
-            #     # a_t
-            #     action = agent.act(obs)
-            #     repeat = True
 
-            action = agent.act(obs)
+            action = agent.act(obs) # the last observation
             for rep in range(action_repeat_n):
                 # o_{t+1}, r_{t+1}
-                #print("Repeat:", rep, "action:", action)
                 obs, r, terminated, truncated, info = env.step(action)
-                rep_r += r
+                rep_r += r # accumulated reward from repeated action
                 t += 1
                 episode_len += 1
-            # my_str = "I repeated "+str(rep)+" times. For action: "+ str(action)
-            # input(my_str)
+            print("Const Repeat:", rep, "action:", action)
             episode_r += rep_r
             
             reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated # careful of max_episode_len if it is type int
