@@ -100,7 +100,9 @@ def train_agent(
             else:
                 obs, r, terminated, truncated, info = env.step(action)
                 episode_len += 1
-                episode_r += r
+                step_r = np.sign(r) # clippped
+                episode_r += r  # unclipped
+
 
             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
