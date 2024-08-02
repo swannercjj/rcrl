@@ -93,13 +93,13 @@ def train_agent(
             episode_r += r
             episode_len += 1
             reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
-            agent.observe(obs, r, terminated, reset)
+            agent.observe(obs, np.sign(r), terminated, reset) #observed clipped rewards
 
             for hook in step_hooks:
                 hook(env, agent, t)
 
             episode_end = terminated or reset or t == steps
-
+    
             if episode_end:
                 logger.info(
                     "outdir:%s step:%s episode:%s R:%s",

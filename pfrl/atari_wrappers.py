@@ -327,8 +327,8 @@ def wrap_deepmind(
     env = WarpFrame(env, channel_order=channel_order)
     if scale:
         env = ScaledFloatFrame(env)
-    if clip_rewards:
-        env = ClipRewardEnv(env)
+    # if clip_rewards: #Don't want to clip rewards anymore
+    #     env = ClipRewardEnv(env)
     if flicker:
         env = FlickerFrame(env)
     if frame_stack:
