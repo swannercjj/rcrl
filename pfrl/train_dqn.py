@@ -15,6 +15,7 @@ from pfrl.q_functions import DiscreteActionValueHead
 import atari_wrappers
 import train_agent
 from evaluator import Evaluator
+import tracemalloc
 
 
 def main():
@@ -247,6 +248,8 @@ def main():
                 ]
             )
 
+    tracemalloc.start()
+
     if args.demo:
         eval_stats = experiments.eval_performance(
             env=eval_env, agent=agent, n_steps=args.eval_n_steps, n_episodes=None
@@ -273,6 +276,7 @@ def main():
             use_tensorboard=True,
             sanity_mod=args.sanity_mod, # for image observations checks
         )
+        tracemalloc.stop()
 
         dir_of_best_network = os.path.join(args.outdir, "best")
         agent.load(dir_of_best_network)

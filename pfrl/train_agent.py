@@ -9,6 +9,8 @@ from pfrl.experiments.evaluator import save_agent
 from evaluator import Evaluator
 from pfrl.utils.ask_yes_no import ask_yes_no
 
+import tracemalloc
+
 
 def save_agent_replay_buffer(agent, t, outdir, suffix="", logger=None):
     logger = logger or logging.getLogger(__name__)
@@ -72,6 +74,8 @@ def train_agent(
     try:
         action = 0
         while t < steps:
+            if use_tensorboard:
+                evaluator.tb_writer.add_scalar("memory/memory_usage", tracemalloc.get_traced_memory()[0])
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
@@ -80,17 +84,15 @@ def train_agent(
             # a_t
             action = agent.act(obs)
 
+            unclipped_r = 0
+
             # o_{t+1}, r_{t+1}
             if hasattr(agent, "action_repeats") and len(agent.action_repeats) > 1:
                 repeat = agent.action_repeats[action % len(agent.action_repeats)]
                 action = action // len(agent.action_repeats)
-                step_r = 0
                 for _ in range(repeat):
                     obs, r, terminated, truncated, info = env.step(action)
-                    step_r += np.sign(r)    # clipped
-
-                    episode_r += r  # unclipped
-                    
+                    unclipped_r += r  # unclipped
                     episode_len += 1
                     t += 1
                     if terminated or info.get("needs_reset", False) or truncated:
@@ -100,9 +102,7 @@ def train_agent(
             else:
                 obs, r, terminated, truncated, info = env.step(action)
                 episode_len += 1
-                step_r = np.sign(r) # clippped
-                episode_r += r  # unclipped
-
+                unclipped_r += r  # unclipped
 
             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
@@ -111,10 +111,9 @@ def train_agent(
                 after = obs_numpy[0]
                 image_obs(after, im_obs, name)
 
-            # episode_r += step_r
-            # episode_len += 1
+            episode_r += unclipped_r
             reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
-            agent.observe(obs, step_r, terminated, reset)
+            agent.observe(obs, np.sign(unclipped_r), terminated, reset)
 
             for hook in step_hooks:
                 hook(env, agent, t)
