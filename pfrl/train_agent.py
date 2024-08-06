@@ -75,7 +75,7 @@ def train_agent(
         action = 0
         while t < steps:
             if use_tensorboard:
-                evaluator.tb_writer.add_scalar("memory/memory_usage", tracemalloc.get_traced_memory()[0])
+                evaluator.tb_writer.add_scalar("memory/memory_usage_gb", float(tracemalloc.get_traced_memory()[0]) * 1e-9)
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
