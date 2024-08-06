@@ -34,7 +34,12 @@ def _run_episodes(
             episode_len = 0
             info = {}
         a = agent.act(obs)
-        if hasattr(agent, "action_repeats") and len(agent.action_repeats) > 1:
+
+        if agent.mode == 1:
+            # constant action repeats
+            pass
+        if agent.mode == 2 and len(agent.action_repeats) > 1:
+            # learn to repeat actions
             repeat = agent.action_repeats[a % len(agent.action_repeats)]
             action = a // len(agent.action_repeats)
             step_r = 0

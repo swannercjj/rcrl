@@ -85,25 +85,31 @@ def train_agent(
             action = agent.act(obs)
 
             unclipped_r = 0
-
             # o_{t+1}, r_{t+1}
-            if hasattr(agent, "action_repeats") and len(agent.action_repeats) > 1:
+
+            if agent.mode == 1:
+                # constant repeat actions
+                pass
+            if agent.mode == 2 and len(agent.action_repeats) > 1:
+                print(agent.mode)
+                # learn to repeat
                 repeat = agent.action_repeats[action % len(agent.action_repeats)]
                 action = action // len(agent.action_repeats)
                 for _ in range(repeat):
                     obs, r, terminated, truncated, info = env.step(action)
-                    unclipped_r += r  # unclipped
-                    episode_len += 1
                     t += 1
+                    unclipped_r += r  # unclipped, currently not discounted
+                    episode_len += 1
                     if terminated or info.get("needs_reset", False) or truncated:
                         break
                 if use_tensorboard:
                     evaluator.tb_writer.add_scalar("actions/num_repeats", repeat, t)
             else:
+                # default
                 obs, r, terminated, truncated, info = env.step(action)
-                episode_len += 1
-                unclipped_r += r  # unclipped
                 t += 1
+                episode_len += 1
+                unclipped_r += r  # unclipped, currently not discounted
 
             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
