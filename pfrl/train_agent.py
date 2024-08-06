@@ -103,6 +103,7 @@ def train_agent(
                 obs, r, terminated, truncated, info = env.step(action)
                 episode_len += 1
                 unclipped_r += r  # unclipped
+                t += 1
 
             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
