@@ -91,7 +91,6 @@ def train_agent(
                 # constant repeat actions
                 pass
             if agent.mode == 2 and len(agent.action_repeats) > 1:
-                print(agent.mode)
                 # learn to repeat
                 repeat = agent.action_repeats[action % len(agent.action_repeats)]
                 action = action // len(agent.action_repeats)
