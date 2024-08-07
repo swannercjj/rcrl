@@ -71,7 +71,7 @@ def train_agent(
     episode_len = 0
     #repeat = True ######
     #rep_count = 1
-    rep_r = 0
+    
     print("CONSTANT REPEATS!")
     try:
         action = 0
@@ -83,19 +83,24 @@ def train_agent(
                 image_obs(before, im_obs, name)
 
             action = agent.act(obs) # the last observation
+            rep_r = 0
             for rep in range(action_repeat_n):
                 # o_{t+1}, r_{t+1}
                 obs, r, terminated, truncated, info = env.step(action)
-                rep_r += r # accumulated reward from repeated action
+                rep_r += (agent.gamma ** rep) * r # accumulated reward from repeated action
                 t += 1
                 episode_len += 1
+                if terminated or info.get("needs reset", False) or truncated:
+                    break
+
             print("Const Repeat:", rep, "action:", action)
             episode_r += rep_r
             
-            reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated # careful of max_episode_len if it is type int
-            agent.observe(obs, rep_r, terminated, reset) # transition: {O_t, A_t, sum reward until t+action_repeat, O_(t+action_repeat)} into the buffer?
+            clipped_rep = np.sign(rep_r) ##### Clipping repeated rewards, choice point
 
-            rep_r = 0 # after repeating, set back to 0
+            reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated # careful of max_episode_len if it is type int
+            agent.observe(obs, clipped_rep , terminated, reset) # transition: {O_t, A_t, sum reward until t+action_repeat, O_(t+action_repeat)} into the buffer?
+
             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"+1_"+"after_obs_"+str(action)+"_"+str(begin)
