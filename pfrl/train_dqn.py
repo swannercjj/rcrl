@@ -131,9 +131,9 @@ def main():
     # action repeats
     parser.add_argument("--mode",
                         type=int,
-                        choices=[0, 1, 2],
+                        choices=[0, 1],
                         default=0,
-                        help="Mode for the agent. 0: default (normal dqn), 1: constant number of action repeats, 2: learn to repeat actions.")
+                        help="Mode for the agent. 0: default (normal dqn), 1: learn to repeat actions.")
     parser.add_argument("--repeat-options", nargs="+", type=int, default="1")
 
     args = parser.parse_args()
@@ -240,7 +240,7 @@ def main():
     )
     agent.mode = args.mode
     # agent add action repeats
-    agent.action_repeats = args.repeat_options
+    agent.action_repeats = args.repeat_options # list
 
     if args.load or args.load_pretrained:
         # either load or load_pretrained must be false
