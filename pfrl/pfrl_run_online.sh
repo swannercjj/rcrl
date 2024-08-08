@@ -32,6 +32,8 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
     --wandb_project_name 'PFRL_Experiments' \
-    --steps 10_000_000
+    --steps 10_000_000 \
+    --mode 1 \
+    --repeat-options 2 4 8 16
 
 cp -r results '/home/gwynetha/projects/def-mbowling/gwynetha/rcrl/pfrl/results' # this folder gets replaced every run

@@ -92,52 +92,41 @@ def train_agent(
                 before = obs_numpy[0]
                 image_obs(before, im_obs, name)
             
+            ############## Taking action #############
             # a_t
             action = agent.act(obs)
             unclipped_r = 0
             
-            if agent.mode == 1:
-                # constant repeat actions
-                for rep in range(action_repeat_n):
-                    # o_{t+1}, r_{t+1}
-                    obs, r, terminated, truncated, info = env.step(action)
-                    unclipped_r += (agent.gamma ** rep) * r # accumulated reward from repeated action
-                    t += 1
-                    episode_len += 1
-                    if terminated or info.get("needs reset", False) or truncated:
-                        break
-                        
-            if agent.mode == 2 and len(agent.action_repeats) > 1:
-                # learn to repeat
-                repeat = agent.action_repeats[action % len(agent.action_repeats)]
+            if agent.mode == 1: # learning to repeat
+                action_repeat_n = agent.action_repeats[action % len(agent.action_repeats)]
                 action = action // len(agent.action_repeats)
-                for _ in range(repeat):
-                    obs, r, terminated, truncated, info = env.step(action)
-                    t += 1
-                    unclipped_r += r  # unclipped, currently not discounted
-                    episode_len += 1
-                    if terminated or info.get("needs_reset", False) or truncated:
-                        break
-                if use_tensorboard:
-                    evaluator.tb_writer.add_scalar("actions/num_repeats", repeat, t)
-            else:
-                # default
+                
+            for rep in range(action_repeat_n): # default is action_repeat = 1
+                # o_{t+1}, r_{t+1}
                 obs, r, terminated, truncated, info = env.step(action)
+                unclipped_r += (agent.gamma ** rep) * r # accumulated reward from repeated action
                 t += 1
                 episode_len += 1
-                unclipped_r += r  # unclipped, currently not discounted
+                if terminated or info.get("needs reset", False) or truncated:
+                    break
+            
+            if use_tensorboard:
+                evaluator.tb_writer.add_scalar("actions/num_repeats", action_repeat_n, t)
+                    
 
-            # checking individual frames
+            episode_r += unclipped_r
+            reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
+            
+            clipped_r = np.sign(unclipped_r) ##### Clipping repeated rewards, choice point
+            agent.observe(obs, clipped_r, terminated, reset)
+            #################################################
+
+             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"+1_"+"after_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
                 after = obs_numpy[0]
                 image_obs(after, im_obs, name)
-
-            episode_r += unclipped_r
-            reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
-            clipped_r = np.sign(rep_r) ##### Clipping repeated rewards, choice point
-            agent.observe(obs, clipped_r, terminated, reset)
 
 
             for hook in step_hooks:
