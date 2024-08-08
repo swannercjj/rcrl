@@ -2,8 +2,8 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=10G
-#SBATCH --time=1-0
+#SBATCH --mem=16G
+#SBATCH --time=2-0
 #SBATCH --array=1-50
 
 if [ "$SLURM_TMPDIR" != "" ]; then
@@ -31,8 +31,7 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --env "ALE/Pong-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
-    --wandb_project_name 'Pfrl_Pong_Paper_0m' \
-    --sanity_mod 1000000 \
-    --steps 10000000
+    --wandb_project_name 'PFRL_Experiments' \
+    --steps 10_000_000
 
-cp -r results '/home/gwynetha/projects/def-mbowling/gwynetha/rcrl/pfrl/results'
+cp -r results '/home/gwynetha/projects/def-mbowling/gwynetha/rcrl/pfrl/results' # this folder gets replaced every run

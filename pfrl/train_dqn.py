@@ -14,6 +14,8 @@ from pfrl.initializers import init_chainer_default
 from pfrl.q_functions import DiscreteActionValueHead
 import atari_wrappers
 import train_agent
+from evaluator import Evaluator
+import tracemalloc
 
 
 def main():
@@ -125,6 +127,15 @@ def main():
 
     # added for logging
     parser.add_argument("--sanity-mod", type=int, default=None)
+
+    # action repeats
+    parser.add_argument("--mode",
+                        type=int,
+                        choices=[0, 1, 2],
+                        default=0,
+                        help="Mode for the agent. 0: default (normal dqn), 1: constant number of action repeats, 2: learn to repeat actions.")
+    parser.add_argument("--repeat-options", nargs="+", type=int, default="1")
+
     args = parser.parse_args()
 
     import logging
@@ -164,7 +175,7 @@ def main():
         env = atari_wrappers.wrap_deepmind(
             atari_wrappers.make_atari_sticky(args.env, max_frames=None, frame_skip=args.frame_skip), # originally used to be make_atari
             episode_life=not test,
-            clip_rewards=not test,
+            clip_rewards=False,
         )
         env.seed(int(env_seed))
         if test:
@@ -181,7 +192,7 @@ def main():
     env = make_env(test=False)
     eval_env = make_env(test=True)
 
-    n_actions = env.action_space.n
+    n_actions = env.action_space.n * len(args.repeat_options)
     q_func = nn.Sequential(     
         pnn.LargeAtariCNN(),
         init_chainer_default(nn.Linear(512, n_actions)),
@@ -227,6 +238,9 @@ def main():
         batch_accumulator="sum",
         phi=phi,
     )
+    agent.mode = args.mode
+    # agent add action repeats
+    agent.action_repeats = args.repeat_options
 
     if args.load or args.load_pretrained:
         # either load or load_pretrained must be false
@@ -239,6 +253,8 @@ def main():
                     0
                 ]
             )
+
+    tracemalloc.start()
 
     if args.demo:
         eval_stats = experiments.eval_performance(
@@ -267,12 +283,13 @@ def main():
             sanity_mod=args.sanity_mod, # for image observations checks
             action_repeat_n = args.action_repeat_n
         )
+        tracemalloc.stop()
 
         dir_of_best_network = os.path.join(args.outdir, "best")
         agent.load(dir_of_best_network)
 
         # run 30 evaluation episodes, each capped at 5 mins of play
-        stats = experiments.evaluator.eval_performance(
+        stats = Evaluator.eval_performance(
             env=eval_env,
             agent=agent,
             n_steps=None,
