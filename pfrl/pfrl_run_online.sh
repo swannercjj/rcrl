@@ -3,7 +3,7 @@
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=16G
-#SBATCH --time=2-0
+#SBATCH --time=1-10
 #SBATCH --array=1-50
 
 if [ "$SLURM_TMPDIR" != "" ]; then
@@ -31,7 +31,7 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --env "ALE/Pong-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
-    --wandb_project_name 'PFRL_Experiments' \
+    --wandb_project_name 'PFRL_AR' \
     --steps 10_000_000 \
     --mode 1 \
     --repeat-options 2 4 8 16
