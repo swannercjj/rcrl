@@ -19,7 +19,7 @@ def test_discount():
     assert discount(reward, gamma) == result
 
 def check_first_frame(env,obs):
-    pathname= os.path.join(os.getcwd(),'tests','frame_check', 'first_frames.npz')
+    pathname= os.path.join(os.getcwd(),'project', 'pfrl', 'tests','frame_check', 'first_frames.npz')
     saved_dict = np.load(pathname)
     saved_first_frame = saved_dict[str(env.spec.id)]
     assert (np.asarray(obs)==saved_first_frame).all(), 'The reset frame does not match the reset state'
