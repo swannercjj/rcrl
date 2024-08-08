@@ -96,12 +96,13 @@ def train_agent(
             # a_t
             action = agent.act(obs)
             unclipped_r = 0
-            
+            #for i in range(100):
+            action = agent.act(obs)
             if agent.mode == 1: # learning to repeat
                 action_repeat_n = agent.action_repeats[action % len(agent.action_repeats)]
                 action = action // len(agent.action_repeats)
-                
             for rep in range(action_repeat_n): # default is action_repeat = 1
+
                 # o_{t+1}, r_{t+1}
                 obs, r, terminated, truncated, info = env.step(action)
                 unclipped_r += (agent.gamma ** rep) * r # accumulated reward from repeated action
