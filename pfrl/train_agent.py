@@ -73,10 +73,7 @@ def train_agent(
 
     eval_stats_history = []  # List of evaluation episode stats dict
     episode_len = 0
-    #repeat = True ######
-    #rep_count = 1
-    
-    print("CONSTANT REPEATS!")
+  
     try:
         action = 0
         while t < steps:

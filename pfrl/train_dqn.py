@@ -49,7 +49,7 @@ def main():
     parser.add_argument(
         "--env",
         type=str,
-        default="ALE/Breakout-v5",
+        default="ALE/SpaceInvaders-v5",
         help="OpenAI Atari domain to perform algorithm on.",
     )
     parser.add_argument(
@@ -61,7 +61,7 @@ def main():
             " If it does not exist, it will be created."
         ),
     )
-    parser.add_argument("--seed", type=int, default=0, help="Random seed [0, 2 ** 31)")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed [0, 2 ** 31)")
     parser.add_argument(
         "--gpu", type=int, default=0, help="GPU to use, set to -1 if no GPU."
     )
@@ -192,7 +192,7 @@ def main():
     env = make_env(test=False)
     eval_env = make_env(test=True)
 
-    n_actions = env.action_space.n * len(args.repeat_options)
+    n_actions = env.action_space.n * len(args.repeat_options) if args.mode == 1 else env.action_space.n
     q_func = nn.Sequential(     
         pnn.LargeAtariCNN(),
         init_chainer_default(nn.Linear(512, n_actions)),
