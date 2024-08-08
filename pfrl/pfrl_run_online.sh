@@ -2,9 +2,9 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=16G
+#SBATCH --mem=32G
 #SBATCH --time=1-10
-#SBATCH --array=1-50
+#SBATCH --array=1-10
 
 if [ "$SLURM_TMPDIR" != "" ]; then
     echo "Setting up SOCKS5 proxy..."
@@ -22,13 +22,13 @@ ls -l
 
 echo "Cloning repo..."
 git config --global http.proxy 'socks5://127.0.0.1:8888'
-git clone --quiet https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
+git clone --quiet --branch organize_modes https://github.com/swannercjj/rcrl.git $SLURM_TMPDIR/project
 
 export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
 export WANDB_MODE=online
 PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dqn.py \
-    --env "ALE/Pong-v5" \
+    --env "ALE/SpaceInvaders-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
     --wandb_project_name 'PFRL_AR' \

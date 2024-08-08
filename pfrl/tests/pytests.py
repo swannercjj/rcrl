@@ -23,7 +23,4 @@ def check_first_frame(env,obs):
     pathname= os.path.join(os.getcwd(),'tests','frame_check', 'first_frames.npz')
     saved_dict = np.load(pathname)
     saved_first_frame = saved_dict[str(env.spec.id)]
-    print(np.asarray(obs))
-    print('#####')
-    print(saved_first_frame)
     assert (np.asarray(obs)==saved_first_frame).all(), 'The reset frame does not match the reset state'

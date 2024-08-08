@@ -83,8 +83,8 @@ def train_agent(
             if use_tensorboard: # logging memory usage
                 evaluator.tb_writer.add_scalar("memory/memory_usage_gb", float(tracemalloc.get_traced_memory()[0]) * 1e-9)
                 
-            if t == 0: # test of if first frame is reset properly
-                check_first_frame(env,obs)
+            # if t == 0: # test of if first frame is reset properly
+            #     check_first_frame(env,obs)
 
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
