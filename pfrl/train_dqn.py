@@ -123,6 +123,7 @@ def main():
         help="Minimum replay buffer size before " + "performing gradient updates.",
     )
     parser.add_argument("--frame-skip", type=int, default=5)
+    parser.add_argument("--action-repeat-n", type=int, default=1)
 
     # added for logging
     parser.add_argument("--sanity-mod", type=int, default=None)
@@ -280,6 +281,7 @@ def main():
             eval_env=eval_env,
             use_tensorboard=True,
             sanity_mod=args.sanity_mod, # for image observations checks
+            action_repeat_n = args.action_repeat_n
         )
         tracemalloc.stop()
 
@@ -304,3 +306,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

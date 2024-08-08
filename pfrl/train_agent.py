@@ -5,6 +5,7 @@ import time
 import numpy as np
 from PIL import Image 
 
+from tests.pytests import check_first_frame
 from pfrl.experiments.evaluator import save_agent
 from evaluator import Evaluator
 from pfrl.utils.ask_yes_no import ask_yes_no
@@ -54,6 +55,7 @@ def train_agent(
     use_tensorboard=False,
     logger=None,
     sanity_mod=None, ### for image observations checks
+    action_repeat_n=1
 ):
     begin = int(time.time())
     logger = logger or logging.getLogger(__name__)
@@ -71,25 +73,40 @@ def train_agent(
 
     eval_stats_history = []  # List of evaluation episode stats dict
     episode_len = 0
+    #repeat = True ######
+    #rep_count = 1
+    
+    print("CONSTANT REPEATS!")
     try:
         action = 0
         while t < steps:
-            if use_tensorboard:
+            if use_tensorboard: # logging memory usage
                 evaluator.tb_writer.add_scalar("memory/memory_usage_gb", float(tracemalloc.get_traced_memory()[0]) * 1e-9)
+                
+            if t == 0: # test of if first frame is reset properly
+                check_first_frame(env,obs)
+
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
                 before = obs_numpy[0]
                 image_obs(before, im_obs, name)
+            
             # a_t
             action = agent.act(obs)
-
             unclipped_r = 0
-            # o_{t+1}, r_{t+1}
-
+            
             if agent.mode == 1:
                 # constant repeat actions
-                pass
+                for rep in range(action_repeat_n):
+                    # o_{t+1}, r_{t+1}
+                    obs, r, terminated, truncated, info = env.step(action)
+                    unclipped_r += (agent.gamma ** rep) * r # accumulated reward from repeated action
+                    t += 1
+                    episode_len += 1
+                    if terminated or info.get("needs reset", False) or truncated:
+                        break
+                        
             if agent.mode == 2 and len(agent.action_repeats) > 1:
                 # learn to repeat
                 repeat = agent.action_repeats[action % len(agent.action_repeats)]
@@ -119,7 +136,9 @@ def train_agent(
 
             episode_r += unclipped_r
             reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
-            agent.observe(obs, np.sign(unclipped_r), terminated, reset)
+            clipped_r = np.sign(rep_r) ##### Clipping repeated rewards, choice point
+            agent.observe(obs, clipped_r, terminated, reset)
+
 
             for hook in step_hooks:
                 hook(env, agent, t)
@@ -196,6 +215,7 @@ def train_agent_with_evaluation(
     eval_during_episode=False,
     logger=None,
     sanity_mod=None, ### for image observations checks
+    action_repeat_n = 1,
 
 ):
     """Train an agent while periodically evaluating it.
@@ -283,7 +303,8 @@ def train_agent_with_evaluation(
         eval_during_episode=eval_during_episode,
         use_tensorboard=use_tensorboard,
         logger=logger,
-        sanity_mod=sanity_mod
+        sanity_mod=sanity_mod,
+        action_repeat_n = action_repeat_n
     )
 
     return agent, eval_stats_history
