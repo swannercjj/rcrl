@@ -5,8 +5,11 @@ import time
 import numpy as np
 from PIL import Image 
 
-from pfrl.experiments.evaluator import Evaluator, save_agent
+from pfrl.experiments.evaluator import save_agent
+from evaluator import Evaluator
 from pfrl.utils.ask_yes_no import ask_yes_no
+
+import tracemalloc
 
 
 def save_agent_replay_buffer(agent, t, outdir, suffix="", logger=None):
@@ -71,6 +74,8 @@ def train_agent(
     try:
         action = 0
         while t < steps:
+            if use_tensorboard:
+                evaluator.tb_writer.add_scalar("memory/memory_usage_gb", float(tracemalloc.get_traced_memory()[0]) * 1e-9)
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
@@ -78,8 +83,32 @@ def train_agent(
                 image_obs(before, im_obs, name)
             # a_t
             action = agent.act(obs)
+
+            unclipped_r = 0
             # o_{t+1}, r_{t+1}
-            obs, r, terminated, truncated, info = env.step(action)
+
+            if agent.mode == 1:
+                # constant repeat actions
+                pass
+            if agent.mode == 2 and len(agent.action_repeats) > 1:
+                # learn to repeat
+                repeat = agent.action_repeats[action % len(agent.action_repeats)]
+                action = action // len(agent.action_repeats)
+                for _ in range(repeat):
+                    obs, r, terminated, truncated, info = env.step(action)
+                    t += 1
+                    unclipped_r += r  # unclipped, currently not discounted
+                    episode_len += 1
+                    if terminated or info.get("needs_reset", False) or truncated:
+                        break
+                if use_tensorboard:
+                    evaluator.tb_writer.add_scalar("actions/num_repeats", repeat, t)
+            else:
+                # default
+                obs, r, terminated, truncated, info = env.step(action)
+                t += 1
+                episode_len += 1
+                unclipped_r += r  # unclipped, currently not discounted
 
             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
@@ -88,12 +117,9 @@ def train_agent(
                 after = obs_numpy[0]
                 image_obs(after, im_obs, name)
 
-
-            t += 1
-            episode_r += r
-            episode_len += 1
+            episode_r += unclipped_r
             reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
-            agent.observe(obs, r, terminated, reset)
+            agent.observe(obs, np.sign(unclipped_r), terminated, reset)
 
             for hook in step_hooks:
                 hook(env, agent, t)

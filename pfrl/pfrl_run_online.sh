@@ -2,7 +2,7 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=32G
+#SBATCH --mem=16G
 #SBATCH --time=2-0
 #SBATCH --array=1-50
 
@@ -32,7 +32,6 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
     --wandb_project_name 'PFRL_Experiments' \
-    --sanity_mod 1000000 \
-    --steps 10000000
+    --steps 10_000_000
 
 cp -r results '/home/gwynetha/projects/def-mbowling/gwynetha/rcrl/pfrl/results' # this folder gets replaced every run
