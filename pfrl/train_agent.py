@@ -4,7 +4,7 @@ import wandb
 import time
 import numpy as np
 from PIL import Image 
-
+from tests.pytests import check_first_frame
 from pfrl.experiments.evaluator import Evaluator, save_agent
 from pfrl.utils.ask_yes_no import ask_yes_no
 
@@ -76,6 +76,8 @@ def train_agent(
     try:
         action = 0
         while t < steps:
+            if t == 0:
+                check_first_frame(env,obs)
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
