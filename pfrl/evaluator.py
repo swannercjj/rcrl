@@ -34,25 +34,22 @@ def _run_episodes(
             episode_len = 0
             info = {}
         a = agent.act(obs)
-
-        if agent.mode == 1:
-            # constant action repeats
-            pass
-        if agent.mode == 2 and len(agent.action_repeats) > 1:
-            # learn to repeat actions
+    
+        if agent.mode == 1: # learning to repeat
             repeat = agent.action_repeats[a % len(agent.action_repeats)]
             action = a // len(agent.action_repeats)
-            step_r = 0
-            for _ in range(repeat):
-                obs, r, terminated, truncated, info = env.step(action)
-                step_r += r
-                episode_len += 1
-                timestep += 1
-                if terminated or info.get("needs_reset", False) or truncated:
-                    break
         else:
-            obs, step_r, terminated, truncated, info = env.step(action)
+            repeat = agent.repeat_n
+
+        step_r = 0
+        for rep in range(repeat): 
+            # o_{t+1}, r_{t+1}
+            obs, r, terminated, truncated, info = env.step(action)
+            step_r += r #### should I discount????
             episode_len += 1
+            timestep += 1
+            if terminated or info.get("needs reset", False) or truncated:
+                break
 
         # obs, r, terminated, truncated, info = env.step(a)
         test_r += step_r
