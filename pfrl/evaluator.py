@@ -40,6 +40,7 @@ def _run_episodes(
             action = a // len(agent.action_repeats)
         else:
             repeat = agent.repeat_n
+            action = a
 
         step_r = 0
         for rep in range(repeat): 
@@ -121,7 +122,7 @@ def _batch_run_episodes(
 ):
     """Run multiple episodes and return returns in a batch manner."""
     assert (n_steps is None) != (n_episodes is None)
-
+    input('we batching')
     logger = logger or logging.getLogger(__name__)
     num_envs = env.num_envs
     episode_returns = dict()
