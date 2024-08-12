@@ -55,7 +55,6 @@ def train_agent(
     use_tensorboard=False,
     logger=None,
     sanity_mod=None, ### for image observations checks
-    action_repeat_n=1
 ):
     begin = int(time.time())
     logger = logger or logging.getLogger(__name__)
@@ -96,9 +95,9 @@ def train_agent(
             #for i in range(100):
             action = agent.act(obs)
             if agent.mode == 1: # learning to repeat
-                action_repeat_n = agent.action_repeats[action % len(agent.action_repeats)]
+                agent.repeat_n = agent.action_repeats[action % len(agent.action_repeats)]
                 action = action // len(agent.action_repeats)
-            for rep in range(action_repeat_n): # default is action_repeat = 1
+            for rep in range(agent.repeat_n): # default is action_repeat = 1
 
                 # o_{t+1}, r_{t+1}
                 obs, r, terminated, truncated, info = env.step(action)
@@ -202,7 +201,6 @@ def train_agent_with_evaluation(
     eval_during_episode=False,
     logger=None,
     sanity_mod=None, ### for image observations checks
-    action_repeat_n = 1,
 
 ):
     """Train an agent while periodically evaluating it.
@@ -291,7 +289,6 @@ def train_agent_with_evaluation(
         use_tensorboard=use_tensorboard,
         logger=logger,
         sanity_mod=sanity_mod,
-        action_repeat_n = action_repeat_n
     )
 
     return agent, eval_stats_history
