@@ -108,7 +108,7 @@ def train_agent(
                     break
             
             if use_tensorboard:
-                evaluator.tb_writer.add_scalar("actions/num_repeats", action_repeat_n, t)
+                evaluator.tb_writer.add_scalar("actions/num_repeats", agent.repeat_n, t)
                     
 
             episode_r += unclipped_r
