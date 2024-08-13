@@ -36,5 +36,5 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --mode 1 \
     --repeat-options 1 4 16 64 \
     --time-mode 1 \
-    --action-repeat-n 1 \
+    --action-repeat-n 1 
 
