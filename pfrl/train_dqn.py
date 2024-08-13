@@ -91,12 +91,12 @@ def main():
             "Monitor env. Videos and additional information are saved as output files."
         ),
     )
-    parser.add_argument(
+    parser.add_argument( 
         "--steps",
         type=int,
         default=5 * 10**7,
         help="Total number of timesteps to train the agent.",
-    )
+    ) ## steps vs decsions??
 
     parser.add_argument("--eval-n-steps", type=int, default=125000)
     parser.add_argument("--eval-interval", type=int, default=250000)
@@ -136,6 +136,13 @@ def main():
                         help="Mode for the agent. 0: default (normal dqn), 1: learn to repeat actions.")
     parser.add_argument("--repeat-options", nargs="+", type=int, default="1")
 
+    # unit of time
+    parser.add_argument("--time-mode",
+                        type=int,
+                        choices=[0,1],
+                        default=0,
+                        help="Mode for the time unit. 0: default (global time step, each action = t.) 1: decision (each new choice of action = t)"
+                        )
     args = parser.parse_args()
 
     import logging
@@ -238,6 +245,7 @@ def main():
         batch_accumulator="sum",
         phi=phi,
     )
+    agent.time_mode = args.time_mode
     agent.mode = args.mode
     agent.repeat_n = args.action_repeat_n
     # agent add action repeats

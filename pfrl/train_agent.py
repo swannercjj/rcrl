@@ -93,15 +93,18 @@ def train_agent(
                 agent.repeat_n = agent.action_repeats[action % len(agent.action_repeats)]
                 action = action // len(agent.action_repeats)
             for rep in range(agent.repeat_n): # default is action_repeat = 1
-
+                if agent.time_mode==0: #each step
+                    t+=1
                 # o_{t+1}, r_{t+1}
                 obs, r, terminated, truncated, info = env.step(action)
                 unclipped_r += (agent.gamma ** rep) * r # accumulated reward from repeated action
-                t += 1
+                
                 episode_len += 1
                 if terminated or info.get("needs reset", False) or truncated:
                     break
             
+            if agent.time_mode==1: # each decision
+                t += 1 
             if use_tensorboard:
                 evaluator.tb_writer.add_scalar("actions/num_repeats", agent.repeat_n, t)
                     
