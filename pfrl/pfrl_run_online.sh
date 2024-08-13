@@ -4,7 +4,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=12G
 #SBATCH --time=1-0
-#SBATCH --array=1-10
+#SBATCH --array=1-15
 
 if [ "$SLURM_TMPDIR" != "" ]; then
     echo "Setting up SOCKS5 proxy..."
@@ -28,13 +28,12 @@ export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
 export WANDB_MODE=online
 PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dqn.py \
-    --env "ALE/Breakout-v5" \
+    --env "ALE/SpaceInvaders-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
-    --wandb_project_name 'PFRL_AR_Extended' \
+    --wandb_project_name 'AR_No_FS' \
     --steps 10_000_000 \
     --mode 1 \
-    --repeat-options 8 32 64 128 \
-    --action-repeat-n 1
-
-cp -r results '/home/gwynetha/projects/def-mbowling/gwynetha/rcrl/pfrl/results' # this folder gets replaced every run
+    --repeat-options 2 8 16 32 \
+    --action-repeat-n 1 \
+    --frame-skip 4
