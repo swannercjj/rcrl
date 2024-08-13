@@ -28,12 +28,13 @@ export python_venv=$SLURM_TMPDIR/virtualenvs/pyenv/bin/python3.11
 
 export WANDB_MODE=online
 PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dqn.py \
-    --env "ALE/SpaceInvaders-v5" \
+    --env "ALE/Breakout-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
-    --wandb_project_name 'PFRL_AR' \
+    --wandb_project_name 'PFRL_AR_Extended' \
     --steps 10_000_000 \
     --mode 1 \
-    --repeat-options 2 4 8 16
+    --repeat-options 8 32 64 128 \
+    --action-repeat-n 1
 
 cp -r results '/home/gwynetha/projects/def-mbowling/gwynetha/rcrl/pfrl/results' # this folder gets replaced every run
