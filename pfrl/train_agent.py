@@ -31,11 +31,6 @@ def ask_and_save_agent_replay_buffer(agent, t, outdir, suffix=""):
 def image_obs(obs, im_obs, name=str): # for logging images on wandb
     '''obs is an array of the observation'''
     im = Image.fromarray(obs)
-    im.save(str(name)+".jpeg")
-    f = open(str(name)+".txt", "a")
-    f.write(str(obs))
-    f.close()
-    
     # create wandb image, put in list of images
     im_wandb = wandb.Image(im, caption=name)
     im_obs.append(im_wandb)
