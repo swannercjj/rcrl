@@ -14,7 +14,7 @@ from pfrl.initializers import init_chainer_default
 from pfrl.q_functions import DiscreteActionValueHead
 import atari_wrappers
 import train_agent
-from evaluator import Evaluator
+import evaluator
 import tracemalloc
 
 
@@ -289,7 +289,7 @@ def main():
         agent.load(dir_of_best_network)
 
         # run 30 evaluation episodes, each capped at 5 mins of play
-        stats = Evaluator.eval_performance(
+        stats = evaluator.eval_performance(
             env=eval_env,
             agent=agent,
             n_steps=None,
