@@ -2,8 +2,8 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=32G
-#SBATCH --time=1-10
+#SBATCH --mem=12G
+#SBATCH --time=1-0
 #SBATCH --array=1-10
 
 if [ "$SLURM_TMPDIR" != "" ]; then
