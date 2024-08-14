@@ -48,14 +48,17 @@ def _run_episodes(
             obs, r, terminated, truncated, info = env.step(action)
             step_r += r #### should I discount????
             episode_len += 1
-            timestep += 1
+            if agent.time_mode==0: #each step
+                    timestep+=1
             if terminated or info.get("needs reset", False) or truncated:
                 break
 
         # obs, r, terminated, truncated, info = env.step(a)
+        if agent.time_mode==1: # each decision
+                timestep += 1 
         test_r += step_r
         reset = terminated or episode_len == max_episode_len or info.get("needs_reset", False) or truncated
-        agent.observe(obs, r, terminated, reset)
+        agent.observe(obs, step_r, terminated, reset)
         if reset:
             logger.info(
                 "evaluation episode %s length:%s R:%s", len(scores), episode_len, test_r
