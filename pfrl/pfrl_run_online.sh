@@ -2,9 +2,9 @@
 #SBATCH --gpus-per-node=1
 #SBATCH --account=def-mbowling
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=12G
-#SBATCH --time=1-0
-#SBATCH --array=1-10
+#SBATCH --mem=32G
+#SBATCH --time=2-23
+#SBATCH --array=1-15
 
 if [ "$SLURM_TMPDIR" != "" ]; then
     echo "Setting up SOCKS5 proxy..."
@@ -31,10 +31,9 @@ PYTHONPATH=$SLURM_TMPDIR/project/:$PYTHONPATH $python_venv project/pfrl/train_dq
     --env "ALE/SpaceInvaders-v5" \
     --seed $SLURM_ARRAY_TASK_ID \
     --track \
-    --wandb_project_name 'Learn_AR' \
+    --wandb_project_name 'Learn_AR_2.0' \
     --steps 10_000_000 \
     --mode 1 \
     --repeat-options 1 4 16 64 \
     --time-mode 1 \
     --action-repeat-n 1 
-
