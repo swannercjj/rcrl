@@ -10,16 +10,12 @@ import tyro
 
 '''
 Name Format:
-{mode}_{value}_{seed}.csv
+mode_{mode}_base_{value}_seed_{seed}.csv
+or
+mode_{mode}_AR_seed_{seed}.csv
 
 mode = {0: constant, 1: AR}
 value = {baseline value like 1 or AR}
-
-ex) mode_0_val_1_seed_1.csv or mode_1_AR_seed_1.csv
-
-TODO: 
-- fix the different mode csv names
-- fix the data_mode (table vs graphs)
 '''
 
 @dataclass
