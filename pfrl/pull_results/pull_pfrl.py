@@ -18,8 +18,6 @@ mode = {0: constant, 1: AR}
 value = {baseline value like 1 or AR}
 '''
 
-# TODO: Why tf is the data not logging/pulling properly? AH.
-
 @dataclass
 class Args:
     entity_name: str = "rcrl"
@@ -102,8 +100,7 @@ def extract_data(project_name, entity_name, data_dir, data_mode):
         config = {k:v.get('value') for k, v in json.loads(run.json_config).items()}
         print('scanning...')
         if os.path.exists(cache_path):
-            #run_data = pd.read_pickle(cache_path)
-            run_data_scan = run.scan_history(keys=['charts/episodic_return', 'global_step'])
+            run_data_scan = pd.read_pickle(cache_path)
         else:
             run_data_scan = run.scan_history(keys=['charts/episodic_return', 'global_step'])
             run_data_scan.to_pickle(cache_path)
