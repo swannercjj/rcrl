@@ -100,12 +100,15 @@ def extract_data(project_name, entity_name, data_dir, data_mode):
         config = {k:v.get('value') for k, v in json.loads(run.json_config).items()}
         print('scanning...')
         if os.path.exists(cache_path):
-            run_data_scan = pd.read_pickle(cache_path)
+            #run_data_scan = pd.read_pickle(cache_path) # get rid of this for now, later problem
+            run_data_scan = run.scan_history(keys=['charts/episodic_return', 'global_step'])
+            
         else:
             run_data_scan = run.scan_history(keys=['charts/episodic_return', 'global_step'])
             run_data_scan.to_pickle(cache_path)
         print('Done scanning.')
-        input(run_data_scan)
+        for row in run_data_scan:
+            print(row)
         ### Figure out how to make this more efficient, taking too long to get each row
         returns = [row['charts/episodic_return'] for row in run_data_scan]
         steps = [row['global_step'] for row in run_data_scan]
