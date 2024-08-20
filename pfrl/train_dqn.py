@@ -14,7 +14,7 @@ from pfrl.initializers import init_chainer_default
 from pfrl.q_functions import DiscreteActionValueHead
 import atari_wrappers
 import train_agent
-from evaluator import Evaluator
+import evaluator
 import tracemalloc
 
 
@@ -49,7 +49,7 @@ def main():
     parser.add_argument(
         "--env",
         type=str,
-        default="ALE/Breakout-v5",
+        default="ALE/SpaceInvaders-v5",
         help="OpenAI Atari domain to perform algorithm on.",
     )
     parser.add_argument(
@@ -61,7 +61,7 @@ def main():
             " If it does not exist, it will be created."
         ),
     )
-    parser.add_argument("--seed", type=int, default=0, help="Random seed [0, 2 ** 31)")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed [0, 2 ** 31)")
     parser.add_argument(
         "--gpu", type=int, default=0, help="GPU to use, set to -1 if no GPU."
     )
@@ -91,12 +91,12 @@ def main():
             "Monitor env. Videos and additional information are saved as output files."
         ),
     )
-    parser.add_argument(
+    parser.add_argument( 
         "--steps",
         type=int,
         default=5 * 10**7,
         help="Total number of timesteps to train the agent.",
-    )
+    ) ## steps vs decsions??
 
     parser.add_argument("--eval-n-steps", type=int, default=125000)
     parser.add_argument("--eval-interval", type=int, default=250000)
@@ -131,11 +131,18 @@ def main():
     # action repeats
     parser.add_argument("--mode",
                         type=int,
-                        choices=[0, 1, 2],
+                        choices=[0, 1],
                         default=0,
-                        help="Mode for the agent. 0: default (normal dqn), 1: constant number of action repeats, 2: learn to repeat actions.")
+                        help="Mode for the agent. 0: default (normal dqn), 1: learn to repeat actions.")
     parser.add_argument("--repeat-options", nargs="+", type=int, default="1")
 
+    # unit of time
+    parser.add_argument("--time-mode",
+                        type=int,
+                        choices=[0,1],
+                        default=0,
+                        help="Mode for the time unit. 0: default (global time step, each action = t.) 1: decision (each new choice of action = t)"
+                        )
     args = parser.parse_args()
 
     import logging
@@ -180,7 +187,7 @@ def main():
         env.seed(int(env_seed))
         if test:
             # Randomize actions like epsilon-greedy in evaluation as well
-            env = pfrl.wrappers.RandomizeAction(env, 0.05)
+            env = pfrl.wrappers.RandomizeAction(env, 0.01) # marlos paper, default 0.05 
         if args.monitor:
             env = pfrl.wrappers.Monitor(
                 env, args.outdir, mode="evaluation" if test else "training"
@@ -192,7 +199,7 @@ def main():
     env = make_env(test=False)
     eval_env = make_env(test=True)
 
-    n_actions = env.action_space.n * len(args.repeat_options)
+    n_actions = env.action_space.n * len(args.repeat_options) if args.mode == 1 else env.action_space.n
     q_func = nn.Sequential(     
         pnn.LargeAtariCNN(),
         init_chainer_default(nn.Linear(512, n_actions)),
@@ -238,9 +245,11 @@ def main():
         batch_accumulator="sum",
         phi=phi,
     )
+    agent.time_mode = args.time_mode
     agent.mode = args.mode
+    agent.repeat_n = args.action_repeat_n
     # agent add action repeats
-    agent.action_repeats = args.repeat_options
+    agent.action_repeats = args.repeat_options # list
 
     if args.load or args.load_pretrained:
         # either load or load_pretrained must be false
@@ -281,7 +290,6 @@ def main():
             eval_env=eval_env,
             use_tensorboard=True,
             sanity_mod=args.sanity_mod, # for image observations checks
-            action_repeat_n = args.action_repeat_n
         )
         tracemalloc.stop()
 
@@ -289,12 +297,12 @@ def main():
         agent.load(dir_of_best_network)
 
         # run 30 evaluation episodes, each capped at 5 mins of play
-        stats = Evaluator.eval_performance(
+        stats = evaluator.eval_performance(
             env=eval_env,
             agent=agent,
             n_steps=None,
             n_episodes=args.n_best_episodes,
-            max_episode_len=4500,
+            max_episode_len=27000, #27_000,30 MINS IN EMULATOR # default 4500
             logger=None,
         )
         with open(os.path.join(args.outdir, "bestscores.json"), "w") as f:

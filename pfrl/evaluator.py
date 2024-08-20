@@ -34,30 +34,31 @@ def _run_episodes(
             episode_len = 0
             info = {}
         a = agent.act(obs)
-
-        if agent.mode == 1:
-            # constant action repeats
-            pass
-        if agent.mode == 2 and len(agent.action_repeats) > 1:
-            # learn to repeat actions
+    
+        if agent.mode == 1: # learning to repeat
             repeat = agent.action_repeats[a % len(agent.action_repeats)]
             action = a // len(agent.action_repeats)
-            step_r = 0
-            for _ in range(repeat):
-                obs, r, terminated, truncated, info = env.step(action)
-                step_r += r
-                episode_len += 1
-                timestep += 1
-                if terminated or info.get("needs_reset", False) or truncated:
-                    break
         else:
-            obs, step_r, terminated, truncated, info = env.step(action)
+            repeat = agent.repeat_n
+            action = a
+
+        step_r = 0
+        for rep in range(repeat): 
+            # o_{t+1}, r_{t+1}
+            obs, r, terminated, truncated, info = env.step(action)
+            step_r += r #### should I discount????
             episode_len += 1
+            if agent.time_mode==0: #each step
+                    timestep+=1
+            if terminated or info.get("needs reset", False) or truncated:
+                break
 
         # obs, r, terminated, truncated, info = env.step(a)
+        if agent.time_mode==1: # each decision
+                timestep += 1 
         test_r += step_r
         reset = terminated or episode_len == max_episode_len or info.get("needs_reset", False) or truncated
-        agent.observe(obs, r, terminated, reset)
+        agent.observe(obs, step_r, terminated, reset)
         if reset:
             logger.info(
                 "evaluation episode %s length:%s R:%s", len(scores), episode_len, test_r
@@ -124,7 +125,6 @@ def _batch_run_episodes(
 ):
     """Run multiple episodes and return returns in a batch manner."""
     assert (n_steps is None) != (n_episodes is None)
-
     logger = logger or logging.getLogger(__name__)
     num_envs = env.num_envs
     episode_returns = dict()

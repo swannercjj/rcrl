@@ -10,13 +10,12 @@ Make a new csv file of game | episodic return with the standard deviation (Have 
 
 @dataclass
 class Args:
-    data_dir: str = "./data/"
+    data_dir: str = "./data_AR/"
     """The location to store cached wandb data and downloaded data."""
-    data_name: str = "replicate_data_pfrl.csv"
-    """The name of the data csv file"""
-    save_name: str = "replicate_results_pfrl.csv"
-    """The name of the results csv file"""
-
+    data_env: str = "SpaceInvaders-v5"
+    project_name: str = "Learn_AR_2.0"
+    save_dir: str = './results_AR/'
+  
 
 def get_CI_stats(data, num_runs):
     sample_mean = np.mean(data['mean_episodic_return'])
@@ -38,17 +37,21 @@ def log_info(df):
 
 if __name__=="__main__":
     args = tyro.cli(Args)
-    file_path = os.path.join(str(args.data_dir) + args.data_name)
-    df = pd.read_csv(file_path)
-    data = log_info(df)
-    new_df = pd.DataFrame(data, columns=['Game', 'Mean Episodic Return', "Num Runs"])
+    data_path = os.path.join(args.data_dir,args.project_name,args.data_env,'tables')
+    # input(os.listdir(data_path))
+    save_folder = os.path.join(args.save_dir,args.project_name,args.data_env,'tables')
+    if not os.path.exists(save_folder):
+        os.makedirs(save_folder)
 
-    print(new_df)
-    file_path = os.path.join(args.data_dir, args.save_name)  
-    new_df.to_csv(file_path)
-    print(args.data_name,'saved in', file_path)
+    for file in os.listdir(data_path):
+        df = pd.read_csv(os.path.join(data_path,file))
+        data = log_info(df)
+        new_df = pd.DataFrame(data, columns=['Game', 'Mean Episodic Return', "Num Runs"])
+        print(new_df)
+        file_path = os.path.join(save_folder, str(file)[:-4]+'_results.csv')  
+        new_df.to_csv(file_path)
+        print(data,'saved in', file_path)
+        
+   
+    
 
-'''
-- hypers double check
-- code
-'''

@@ -31,11 +31,6 @@ def ask_and_save_agent_replay_buffer(agent, t, outdir, suffix=""):
 def image_obs(obs, im_obs, name=str): # for logging images on wandb
     '''obs is an array of the observation'''
     im = Image.fromarray(obs)
-    im.save(str(name)+".jpeg")
-    f = open(str(name)+".txt", "a")
-    f.write(str(obs))
-    f.close()
-    
     # create wandb image, put in list of images
     im_wandb = wandb.Image(im, caption=name)
     im_obs.append(im_wandb)
@@ -55,7 +50,6 @@ def train_agent(
     use_tensorboard=False,
     logger=None,
     sanity_mod=None, ### for image observations checks
-    action_repeat_n=1
 ):
     begin = int(time.time())
     logger = logger or logging.getLogger(__name__)
@@ -73,18 +67,15 @@ def train_agent(
 
     eval_stats_history = []  # List of evaluation episode stats dict
     episode_len = 0
-    #repeat = True ######
-    #rep_count = 1
-    
-    print("CONSTANT REPEATS!")
+  
     try:
         action = 0
         while t < steps:
             if use_tensorboard: # logging memory usage
                 evaluator.tb_writer.add_scalar("memory/memory_usage_gb", float(tracemalloc.get_traced_memory()[0]) * 1e-9)
                 
-            if t == 0: # test of if first frame is reset properly
-                check_first_frame(env,obs)
+            # if t == 0: # test of if first frame is reset properly
+            #     check_first_frame(env,obs)
 
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"_"+"before_obs_"+str(action)+"_"+str(begin)
@@ -92,52 +83,45 @@ def train_agent(
                 before = obs_numpy[0]
                 image_obs(before, im_obs, name)
             
+            ############## Taking action #############
             # a_t
             action = agent.act(obs)
             unclipped_r = 0
-            
-            if agent.mode == 1:
-                # constant repeat actions
-                for rep in range(action_repeat_n):
-                    # o_{t+1}, r_{t+1}
-                    obs, r, terminated, truncated, info = env.step(action)
-                    unclipped_r += (agent.gamma ** rep) * r # accumulated reward from repeated action
-                    t += 1
-                    episode_len += 1
-                    if terminated or info.get("needs reset", False) or truncated:
-                        break
-                        
-            if agent.mode == 2 and len(agent.action_repeats) > 1:
-                # learn to repeat
-                repeat = agent.action_repeats[action % len(agent.action_repeats)]
+            #for i in range(100):
+            action = agent.act(obs)
+            if agent.mode == 1: # learning to repeat
+                agent.repeat_n = agent.action_repeats[action % len(agent.action_repeats)]
                 action = action // len(agent.action_repeats)
-                for _ in range(repeat):
-                    obs, r, terminated, truncated, info = env.step(action)
-                    t += 1
-                    unclipped_r += r  # unclipped, currently not discounted
-                    episode_len += 1
-                    if terminated or info.get("needs_reset", False) or truncated:
-                        break
-                if use_tensorboard:
-                    evaluator.tb_writer.add_scalar("actions/num_repeats", repeat, t)
-            else:
-                # default
+            for rep in range(agent.repeat_n): # default is action_repeat = 1
+                if agent.time_mode==0: #each step
+                    t+=1
+                # o_{t+1}, r_{t+1}
                 obs, r, terminated, truncated, info = env.step(action)
-                t += 1
+                unclipped_r += (agent.gamma ** rep) * r # accumulated reward from repeated action
+                
                 episode_len += 1
-                unclipped_r += r  # unclipped, currently not discounted
+                if terminated or info.get("needs reset", False) or truncated:
+                    break
+            
+            if agent.time_mode==1: # each decision
+                t += 1 
+            if use_tensorboard:
+                evaluator.tb_writer.add_scalar("actions/num_repeats", agent.repeat_n, t)
+                    
 
-            # checking individual frames
+            episode_r += unclipped_r
+            reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
+            
+            clipped_r = np.sign(unclipped_r) ##### Clipping repeated rewards, choice point
+            agent.observe(obs, clipped_r, terminated, reset)
+            #################################################
+
+             # checking individual frames
             if sanity_mod !=None and t%sanity_mod == 0:
                 name = str(t)+"+1_"+"after_obs_"+str(action)+"_"+str(begin)
                 obs_numpy = np.asarray(obs)
                 after = obs_numpy[0]
                 image_obs(after, im_obs, name)
-
-            episode_r += unclipped_r
-            reset = episode_len == max_episode_len or info.get("needs_reset", False) or truncated
-            clipped_r = np.sign(rep_r) ##### Clipping repeated rewards, choice point
-            agent.observe(obs, clipped_r, terminated, reset)
 
 
             for hook in step_hooks:
@@ -215,7 +199,6 @@ def train_agent_with_evaluation(
     eval_during_episode=False,
     logger=None,
     sanity_mod=None, ### for image observations checks
-    action_repeat_n = 1,
 
 ):
     """Train an agent while periodically evaluating it.
@@ -304,7 +287,6 @@ def train_agent_with_evaluation(
         use_tensorboard=use_tensorboard,
         logger=logger,
         sanity_mod=sanity_mod,
-        action_repeat_n = action_repeat_n
     )
 
     return agent, eval_stats_history
