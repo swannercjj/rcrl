@@ -1,0 +1,10 @@
+,env,seed,mean_episodic_return,mode,action_repeat_n
+13,ALE/SpaceInvaders-v5,3,424.7,0,1
+14,ALE/SpaceInvaders-v5,7,344.1,0,1
+15,ALE/SpaceInvaders-v5,5,381.35,0,1
+17,ALE/SpaceInvaders-v5,10,406.5,0,1
+18,ALE/SpaceInvaders-v5,9,406.5,0,1
+19,ALE/SpaceInvaders-v5,11,494.9,0,1
+20,ALE/SpaceInvaders-v5,14,303.6,0,1
+21,ALE/SpaceInvaders-v5,13,447.35,0,1
+22,ALE/SpaceInvaders-v5,15,349.15,0,1
