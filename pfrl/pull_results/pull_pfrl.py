@@ -22,11 +22,11 @@ value = {baseline value like 1 or AR}
 class Args:
     entity_name: str = "rcrl"
     """Wandb workspace name."""
-    project_name: str = "Learn_AR_SI"
+    project_name: str = "Learn_AR_SI_2.0"
     """Project to pull from."""
     data_dir: str = "./data_AR/"
     """The location to store cached wandb data and downloaded data."""
-    data_mode: str = "graphing" # "table"
+    data_mode: str = "table" # "graphing" # 
 
 
 def cache_runs(project_name, entity_name, data_dir):
@@ -86,6 +86,7 @@ def save_table_data(df, config, data_dir):
     for n in df.query('mode==0')['action_repeat_n'].unique(): # different baselines
         file_path = os.path.join(base_path,'mode_0_base_'+str(n)+'.csv')
         df.query(f'mode==0 and action_repeat_n=={n}').to_csv(file_path)
+    print(file_path)
 
 
 def extract_data(project_name, entity_name, data_dir, data_mode):
@@ -100,23 +101,23 @@ def extract_data(project_name, entity_name, data_dir, data_mode):
         config = {k:v.get('value') for k, v in json.loads(run.json_config).items()}
         print('scanning...')
         if os.path.exists(cache_path):
-            #run_data_scan = pd.read_pickle(cache_path) # get rid of this for now, later problem
-            run_data_scan = run.scan_history(keys=['charts/episodic_return', 'global_step'])
-            
+                #run_data_scan = pd.read_pickle(cache_path) # get rid of this for now, later problem
+                run_data_scan = run.history(keys=['charts/episodic_return', 'global_step', 'charts/decisions'])
+                
         else:
-            run_data_scan = run.scan_history(keys=['charts/episodic_return', 'global_step'])
+            run_data_scan = run.history(keys=['charts/episodic_return', 'global_step','charts/decisions']) 
             run_data_scan.to_pickle(cache_path)
         print('Done scanning.')
-        for row in run_data_scan:
-            print(row)
-        ### Figure out how to make this more efficient, taking too long to get each row
-        returns = [row['charts/episodic_return'] for row in run_data_scan]
-        steps = [row['global_step'] for row in run_data_scan]
+    
+        # for row in run_data_scan:
+        #     print(row)
+        # ### Figure out how to make this more efficient, taking too long to get each row
+        # returns = [row['charts/episodic_return'] for row in run_data_scan]
+        # steps = [row['global_step'] for row in run_data_scan]
        
-        print(returns)
-        info = {'charts/episodic_return':returns,'global_step':steps}
+
+        data = run_data_scan # just doing pd.DataFrame(run_data_scan) gives a lot of NaN values
         
-        data = pd.DataFrame(info) # just doing pd.DataFrame(run_data_scan) gives a lot of NaN values
         if data_mode == "table": # for replicating Marlos paper format, evaluate on the last 100 episodes
             dic = dict(data[~data['charts/episodic_return'].isnull()][-100:].mean())
             df.loc[len(df)] = [config.get('env'), config.get('seed'), dic.get('charts/episodic_return'),config.get('mode'),config.get('action_repeat_n')]
