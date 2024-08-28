@@ -13,7 +13,7 @@ class Args:
     data_dir: str = "./data_AR/"
     """The location to store cached wandb data and downloaded data."""
     data_env: str = "SpaceInvaders-v5"
-    project_name: str = "Learn_AR_2.0"
+    project_name: str = "Learn_AR_SI_2.0"
     save_dir: str = './results_AR/'
   
 

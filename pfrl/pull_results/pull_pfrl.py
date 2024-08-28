@@ -26,7 +26,7 @@ class Args:
     """Project to pull from."""
     data_dir: str = "./data_AR/"
     """The location to store cached wandb data and downloaded data."""
-    data_mode: str = "table" # "graphing" # 
+    data_mode: str = "table" # "graphing" # 'agg_graph' ?
 
 
 def cache_runs(project_name, entity_name, data_dir):
@@ -72,6 +72,10 @@ def save_graph_data(data, config, data_dir):
         file_path = os.path.join(file_path,'mode_0_base_'+str(config.get('action_repeat_n'))+'_seed_'+str(config.get('seed'))+'.csv')
     data.to_csv(file_path)
 
+def agg_graph_data(data, config, data_dir):
+    # fill null values with next known val?
+    data = data.bfill()
+    
 
 def save_table_data(df, config, data_dir):
     # saves a csv file for making mean comparisons
@@ -90,6 +94,13 @@ def save_table_data(df, config, data_dir):
 
 
 def extract_data(project_name, entity_name, data_dir, data_mode):
+    '''
+    random notes:
+    - run.history() only gives the last 500 rows of info
+    - run.scan_history() gives everything, but takes forever
+    - putting in keys = ['col names'] only gives columns where all vals in keys are not null
+    - is this worth it rn to fix? 
+    '''
     if data_mode == 'table':
         df = pd.DataFrame(columns=['env', 'seed', 'mean_episodic_return', 'mode', 'action_repeat_n'])
     api = wandb.Api()
@@ -102,27 +113,34 @@ def extract_data(project_name, entity_name, data_dir, data_mode):
         print('scanning...')
         if os.path.exists(cache_path):
                 #run_data_scan = pd.read_pickle(cache_path) # get rid of this for now, later problem
-                run_data_scan = run.history(keys=['charts/episodic_return', 'global_step', 'charts/decisions'])
+                run_data_scan = run.scan_history(page_size=10_000,keys=['charts/episodic_return', 'global_step', 'charts/decisions']) # TODO: might have to edit this to get the null values back on yippeeeee
+                # only doing run.history() without keys give null values?
+                # no_keys = run.history()
+                # print(no_keys.columns)
+                # new_df = no_keys[['charts/episodic_return', 'global_step', 'charts/decisions']]
+                # new_df.to_csv('no_keys.csv')
+                # run_data_scan.to_csv('with_keys.csv')
+                info = pd.DataFrame(run_data_scan)
+                info.to_csv('hi2.csv')
+                input('done saving')
+            
                 
         else:
             run_data_scan = run.history(keys=['charts/episodic_return', 'global_step','charts/decisions']) 
             run_data_scan.to_pickle(cache_path)
         print('Done scanning.')
-    
-        # for row in run_data_scan:
-        #     print(row)
-        # ### Figure out how to make this more efficient, taking too long to get each row
-        # returns = [row['charts/episodic_return'] for row in run_data_scan]
-        # steps = [row['global_step'] for row in run_data_scan]
-       
 
-        data = run_data_scan # just doing pd.DataFrame(run_data_scan) gives a lot of NaN values
+        data = run_data_scan 
         
         if data_mode == "table": # for replicating Marlos paper format, evaluate on the last 100 episodes
             dic = dict(data[~data['charts/episodic_return'].isnull()][-100:].mean())
             df.loc[len(df)] = [config.get('env'), config.get('seed'), dic.get('charts/episodic_return'),config.get('mode'),config.get('action_repeat_n')]
-        else: # making action vs decision graph
+
+        elif data_mode == 'graphing': # making action vs decision graph
             save_graph_data(data, config, data_dir)
+
+        else: #agg graphs?
+            pass
         print(f"Data saved for run {run.id} seed {config.get('seed')}")
 
     if data_mode == "table":
