@@ -71,6 +71,7 @@ def train_agent(
     try:
         action = 0
         d = 0 # number of decisions made
+        i = 0 # number of interactions with the environment
         while t < steps:
             if use_tensorboard: # logging memory usage
                 evaluator.tb_writer.add_scalar("memory/memory_usage_gb", float(tracemalloc.get_traced_memory()[0]) * 1e-9)
@@ -94,6 +95,7 @@ def train_agent(
                 agent.repeat_n = agent.action_repeats[action % len(agent.action_repeats)]
                 action = action // len(agent.action_repeats)
             for rep in range(agent.repeat_n): # default is action_repeat = 1
+                i +=1 
                 if agent.time_mode==0: #each step
                     t+=1
                 # o_{t+1}, r_{t+1}
@@ -142,6 +144,7 @@ def train_agent(
                 if use_tensorboard:
                     evaluator.tb_writer.add_scalar("charts/episodic_return", episode_r, t)
                     evaluator.tb_writer.add_scalar("charts/decisions", d, t)
+                    evaluator.tb_writer.add_scalar("charts/interactions", i, t)
                
                 stats = agent.get_statistics()
                 logger.info("statistics:%s", stats)
